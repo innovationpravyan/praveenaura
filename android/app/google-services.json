@@ -1,0 +1,82 @@
+{
+  "project_info": {
+    "project_number": "935482127807",
+    "project_id": "auradb-21288",
+    "storage_bucket": "auradb-21288.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:935482127807:android:e49cf23cfb43f7103f5d0a",
+        "android_client_info": {
+          "package_name": "com.example.auralook"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "935482127807-afm9rmph5360r9j8urjr6g4c0ntio5ha.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDuAHuBBPhSfCKjMoukYf-KkC_j0HrPRo8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "935482127807-afm9rmph5360r9j8urjr6g4c0ntio5ha.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "935482127807-k5cho8nevgn61jjujjtnq0mda6fq978p.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.auralook"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:935482127807:android:2c12ae50978399e53f5d0a",
+        "android_client_info": {
+          "package_name": "com.example.aurame"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "935482127807-afm9rmph5360r9j8urjr6g4c0ntio5ha.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDuAHuBBPhSfCKjMoukYf-KkC_j0HrPRo8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "935482127807-afm9rmph5360r9j8urjr6g4c0ntio5ha.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "935482127807-k5cho8nevgn61jjujjtnq0mda6fq978p.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.auralook"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
