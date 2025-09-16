@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../constants/app_constants.dart';
 import 'app_colors.dart';
@@ -10,177 +11,225 @@ class AppTheme {
 
   // Female Light Theme
   static ThemeData get femaleLightTheme {
-    return ThemeData(
-      useMaterial3: true,
-      fontFamily: AppTextStyles.fontFamily,
+    return _buildTheme(
       brightness: Brightness.light,
-      primaryColor: AppColors.primaryPink,
-      scaffoldBackgroundColor: AppColors.femaleBackgroundLight,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: AppColors.primaryPink,
-        brightness: Brightness.light,
-        primary: AppColors.primaryPink,
-        onPrimary: AppColors.white,
-        secondary: AppColors.femaleSecondary,
-        onSecondary: AppColors.white,
-        surface: AppColors.femaleCardLight,
-        onSurface: AppColors.grey800,
-        outline: AppColors.grey400,
-        error: AppColors.error,
-      ),
-      appBarTheme: _buildAppBarTheme(
-        backgroundColor: AppColors.femaleBackgroundLight,
-        foregroundColor: AppColors.grey800,
-        systemOverlayStyle: SystemUiOverlayStyle.dark,
-      ),
-      elevatedButtonTheme: _buildElevatedButtonTheme(AppColors.primaryPink),
-      outlinedButtonTheme: _buildOutlinedButtonTheme(AppColors.primaryPink),
-      textButtonTheme: _buildTextButtonTheme(AppColors.primaryPink),
-      inputDecorationTheme: _buildInputDecorationTheme(
-        fillColor: AppColors.white,
-        borderColor: AppColors.grey300,
-        focusColor: AppColors.primaryPink,
-      ),
-      cardTheme: _buildCardTheme(
-        color: AppColors.femaleCardLight,
-        shadowColor: AppColors.shadowLight,
-      ),
-      bottomNavigationBarTheme: _buildBottomNavTheme(
-        backgroundColor: AppColors.white,
-        selectedItemColor: AppColors.primaryPink,
-      ),
+      gender: 'female',
+      isDark: false,
     );
   }
 
   // Female Dark Theme
   static ThemeData get femaleDarkTheme {
-    return ThemeData(
-      useMaterial3: true,
-      fontFamily: AppTextStyles.fontFamily,
+    return _buildTheme(
       brightness: Brightness.dark,
-      primaryColor: AppColors.primaryPink,
-      scaffoldBackgroundColor: AppColors.femaleBackgroundDark,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: AppColors.primaryPink,
-        brightness: Brightness.dark,
-        primary: AppColors.primaryPink,
-        onPrimary: AppColors.white,
-        secondary: AppColors.femaleSecondary,
-        onSecondary: AppColors.white,
-        surface: AppColors.femaleCardDark,
-        onSurface: AppColors.white,
-        outline: AppColors.grey500,
-        error: AppColors.error,
-      ),
-      appBarTheme: _buildAppBarTheme(
-        backgroundColor: AppColors.femaleBackgroundDark,
-        foregroundColor: AppColors.white,
-        systemOverlayStyle: SystemUiOverlayStyle.light,
-      ),
-      elevatedButtonTheme: _buildElevatedButtonTheme(AppColors.primaryPink),
-      outlinedButtonTheme: _buildOutlinedButtonTheme(AppColors.primaryPink),
-      textButtonTheme: _buildTextButtonTheme(AppColors.primaryPink),
-      inputDecorationTheme: _buildInputDecorationTheme(
-        fillColor: AppColors.femaleCardDark,
-        borderColor: AppColors.grey600,
-        focusColor: AppColors.primaryPink,
-      ),
-      cardTheme: _buildCardTheme(
-        color: AppColors.femaleCardDark,
-        shadowColor: AppColors.shadowDark,
-      ),
-      bottomNavigationBarTheme: _buildBottomNavTheme(
-        backgroundColor: AppColors.femaleCardDark,
-        selectedItemColor: AppColors.primaryPink,
-      ),
+      gender: 'female',
+      isDark: true,
     );
   }
 
   // Male Light Theme
   static ThemeData get maleLightTheme {
-    return ThemeData(
-      useMaterial3: true,
-      fontFamily: AppTextStyles.fontFamily,
+    return _buildTheme(
       brightness: Brightness.light,
-      primaryColor: AppColors.primaryBlue,
-      scaffoldBackgroundColor: AppColors.maleBackgroundLight,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: AppColors.primaryBlue,
-        brightness: Brightness.light,
-        primary: AppColors.primaryBlue,
-        onPrimary: AppColors.white,
-        secondary: AppColors.maleSecondary,
-        onSecondary: AppColors.white,
-        surface: AppColors.maleCardLight,
-        onSurface: AppColors.grey800,
-        outline: AppColors.grey400,
-        error: AppColors.error,
-      ),
-      appBarTheme: _buildAppBarTheme(
-        backgroundColor: AppColors.maleBackgroundLight,
-        foregroundColor: AppColors.grey800,
-        systemOverlayStyle: SystemUiOverlayStyle.dark,
-      ),
-      elevatedButtonTheme: _buildElevatedButtonTheme(AppColors.primaryBlue),
-      outlinedButtonTheme: _buildOutlinedButtonTheme(AppColors.primaryBlue),
-      textButtonTheme: _buildTextButtonTheme(AppColors.primaryBlue),
-      inputDecorationTheme: _buildInputDecorationTheme(
-        fillColor: AppColors.white,
-        borderColor: AppColors.grey300,
-        focusColor: AppColors.primaryBlue,
-      ),
-      cardTheme: _buildCardTheme(
-        color: AppColors.maleCardLight,
-        shadowColor: AppColors.shadowLight,
-      ),
-      bottomNavigationBarTheme: _buildBottomNavTheme(
-        backgroundColor: AppColors.white,
-        selectedItemColor: AppColors.primaryBlue,
-      ),
+      gender: 'male',
+      isDark: false,
     );
   }
 
   // Male Dark Theme
   static ThemeData get maleDarkTheme {
+    return _buildTheme(
+      brightness: Brightness.dark,
+      gender: 'male',
+      isDark: true,
+    );
+  }
+
+  // Main theme builder method
+  static ThemeData _buildTheme({
+    required Brightness brightness,
+    required String gender,
+    required bool isDark,
+  }) {
+    final primaryColor = AppColors.getPrimaryColorForGender(
+      gender,
+      isDark: isDark,
+    );
+    final backgroundColor = AppColors.getBackgroundColor(isDark: isDark);
+    final surfaceColor = AppColors.getSurfaceColor(isDark: isDark);
+    final textHighEmphasis = AppColors.getTextHighEmphasisColor(isDark: isDark);
+    final textMediumEmphasis = AppColors.getTextMediumEmphasisColor(
+      isDark: isDark,
+    );
+    final textDisabled = AppColors.getTextDisabledColor(isDark: isDark);
+    final dividerColor = AppColors.getDividerColor(isDark: isDark);
+    final shadowColor = AppColors.getShadowColor(isDark: isDark);
+
     return ThemeData(
       useMaterial3: true,
       fontFamily: AppTextStyles.fontFamily,
-      brightness: Brightness.dark,
-      primaryColor: AppColors.primaryBlue,
-      scaffoldBackgroundColor: AppColors.maleBackgroundDark,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: AppColors.primaryBlue,
-        brightness: Brightness.dark,
-        primary: AppColors.primaryBlue,
-        onPrimary: AppColors.white,
-        secondary: AppColors.maleSecondary,
-        onSecondary: AppColors.white,
-        surface: AppColors.maleCardDark,
-        onSurface: AppColors.white,
-        outline: AppColors.grey500,
-        error: AppColors.error,
+      brightness: brightness,
+      primaryColor: primaryColor,
+      scaffoldBackgroundColor: backgroundColor,
+
+      colorScheme: ColorScheme(
+        brightness: brightness,
+        primary: primaryColor,
+        onPrimary: isDark ? AppColors.textHighEmphasisDark : AppColors.white,
+        primaryContainer: isDark
+            ? AppColors.secondaryDark
+            : AppColors.secondaryLight,
+        onPrimaryContainer: textHighEmphasis,
+        secondary: isDark ? AppColors.accentDark : AppColors.accentLight,
+        onSecondary: isDark
+            ? AppColors.textHighEmphasisDark
+            : AppColors.textHighEmphasisLight,
+        secondaryContainer: isDark
+            ? AppColors.secondaryVariantDark
+            : AppColors.secondaryVariantLight,
+        onSecondaryContainer: textHighEmphasis,
+        tertiary: AppColors.getSuccessColor(isDark: isDark),
+        onTertiary: isDark ? AppColors.textHighEmphasisDark : AppColors.white,
+        tertiaryContainer: AppColors.getSuccessColor(
+          isDark: isDark,
+        ).withOpacity(isDark ? 0.2 : 0.1),
+        onTertiaryContainer: AppColors.getSuccessColor(isDark: isDark),
+        error: AppColors.getErrorColor(isDark: isDark),
+        onError: isDark ? AppColors.textHighEmphasisDark : AppColors.white,
+        surface: surfaceColor,
+        onSurface: textHighEmphasis,
+        onSurfaceVariant: textMediumEmphasis,
+        outline: dividerColor,
+        outlineVariant: dividerColor.withOpacity(0.5),
+        shadow: shadowColor,
+        scrim: shadowColor,
+        inverseSurface: isDark ? AppColors.surfaceLight : AppColors.surfaceDark,
+        onInverseSurface: isDark
+            ? AppColors.textHighEmphasisLight
+            : AppColors.textHighEmphasisDark,
+        inversePrimary: isDark
+            ? AppColors.getPrimaryColorForGender(gender, isDark: false)
+            : AppColors.getPrimaryColorForGender(gender, isDark: true),
       ),
+
+      // AppBar theme for beauty services - clean and professional
       appBarTheme: _buildAppBarTheme(
-        backgroundColor: AppColors.maleBackgroundDark,
-        foregroundColor: AppColors.white,
-        systemOverlayStyle: SystemUiOverlayStyle.light,
+        backgroundColor: surfaceColor,
+        foregroundColor: textHighEmphasis,
+        systemOverlayStyle: isDark
+            ? SystemUiOverlayStyle.light
+            : SystemUiOverlayStyle.dark,
+        shadowColor: shadowColor,
+        isDark: isDark,
       ),
-      elevatedButtonTheme: _buildElevatedButtonTheme(AppColors.primaryBlue),
-      outlinedButtonTheme: _buildOutlinedButtonTheme(AppColors.primaryBlue),
-      textButtonTheme: _buildTextButtonTheme(AppColors.primaryBlue),
-      inputDecorationTheme: _buildInputDecorationTheme(
-        fillColor: AppColors.maleCardDark,
-        borderColor: AppColors.grey600,
-        focusColor: AppColors.primaryBlue,
-      ),
-      cardTheme: _buildCardTheme(
-        color: AppColors.maleCardDark,
-        shadowColor: AppColors.shadowDark,
-      ),
+
+      // Card theme with subtle elevation
+      cardTheme: _buildCardTheme(color: surfaceColor, shadowColor: shadowColor),
+
+      // Bottom navigation optimized for beauty services
       bottomNavigationBarTheme: _buildBottomNavTheme(
-        backgroundColor: AppColors.maleCardDark,
-        selectedItemColor: AppColors.primaryBlue,
+        backgroundColor: surfaceColor,
+        selectedItemColor: primaryColor,
+        unselectedItemColor: textMediumEmphasis,
+        isDark: isDark,
       ),
+
+      // Floating action button for primary booking actions
+      floatingActionButtonTheme: _buildFloatingActionButtonTheme(
+        backgroundColor: primaryColor,
+        foregroundColor: isDark
+            ? AppColors.textHighEmphasisDark
+            : AppColors.white,
+      ),
+
+      // Button themes with warm professional styling
+      elevatedButtonTheme: _buildElevatedButtonTheme(
+        backgroundColor: primaryColor,
+        foregroundColor: isDark
+            ? AppColors.textHighEmphasisDark
+            : AppColors.white,
+        shadowColor: shadowColor,
+      ),
+
+      outlinedButtonTheme: _buildOutlinedButtonTheme(primaryColor),
+
+      textButtonTheme: _buildTextButtonTheme(primaryColor),
+
+      // Typography with Google Fonts Inter
+      textTheme: AppTextStyles.buildTextTheme(isDark: isDark),
+
+      // Input decoration for booking forms
+      inputDecorationTheme: _buildInputDecorationTheme(
+        fillColor: surfaceColor,
+        borderColor: dividerColor.withOpacity(0.5),
+        focusColor: primaryColor,
+        isDark: isDark,
+      ),
+
+      // Interactive elements
+      switchTheme: _buildSwitchTheme(
+        primaryColor: primaryColor,
+        trackColor: textMediumEmphasis,
+      ),
+
+      checkboxTheme: _buildCheckboxTheme(
+        primaryColor: primaryColor,
+        borderColor: textMediumEmphasis,
+      ),
+
+      radioTheme: _buildRadioTheme(
+        primaryColor: primaryColor,
+        unselectedColor: textMediumEmphasis,
+      ),
+
+      progressIndicatorTheme: _buildProgressIndicatorTheme(
+        color: primaryColor,
+        trackColor: isDark ? AppColors.secondaryDark : AppColors.secondaryLight,
+      ),
+
+      sliderTheme: _buildSliderTheme(
+        primaryColor: primaryColor,
+        trackColor: isDark ? AppColors.secondaryDark : AppColors.secondaryLight,
+      ),
+
+      // Tab bar theme for service categories
+      tabBarTheme: _buildTabBarTheme(
+        labelColor: primaryColor,
+        unselectedLabelColor: textMediumEmphasis,
+        indicatorColor: primaryColor,
+        isDark: isDark,
+      ),
+
+      tooltipTheme: _buildTooltipTheme(
+        backgroundColor: textHighEmphasis.withOpacity(0.9),
+        textColor: surfaceColor,
+        isDark: isDark,
+      ),
+
+      snackBarTheme: _buildSnackBarTheme(
+        backgroundColor: textHighEmphasis,
+        contentTextColor: surfaceColor,
+        actionTextColor: isDark ? AppColors.accentDark : AppColors.accentLight,
+      ),
+
+      // Chip theme for service tags
+      chipTheme: _buildChipTheme(
+        backgroundColor: isDark
+            ? AppColors.secondaryDark
+            : AppColors.secondaryLight,
+        selectedColor: primaryColor,
+        labelColor: textHighEmphasis,
+        secondaryLabelColor: isDark
+            ? AppColors.textHighEmphasisDark
+            : AppColors.white,
+        isDark: isDark,
+      ),
+
+      dialogTheme: DialogThemeData(
+        backgroundColor: isDark ? AppColors.dialogDark : AppColors.dialogLight,
+      ),
+
+      dividerColor: dividerColor,
     );
   }
 
@@ -189,36 +238,101 @@ class AppTheme {
     required Color backgroundColor,
     required Color foregroundColor,
     required SystemUiOverlayStyle systemOverlayStyle,
+    required Color shadowColor,
+    required bool isDark,
   }) {
     return AppBarTheme(
       backgroundColor: backgroundColor,
       foregroundColor: foregroundColor,
       elevation: 0,
-      centerTitle: true,
-      titleTextStyle: AppTextStyles.headlineSmall.copyWith(
+      shadowColor: shadowColor,
+      surfaceTintColor: Colors.transparent,
+      titleTextStyle: AppTextStyles.appBarTitle(
         color: foregroundColor,
-        fontWeight: FontWeight.w600,
+        isDark: isDark,
       ),
-      systemOverlayStyle: systemOverlayStyle,
       iconTheme: IconThemeData(
         color: foregroundColor,
         size: AppConstants.mediumIconSize,
       ),
-      surfaceTintColor: Colors.transparent,
+      actionsIconTheme: IconThemeData(
+        color: foregroundColor,
+        size: AppConstants.mediumIconSize,
+      ),
+      systemOverlayStyle: systemOverlayStyle,
     );
   }
 
-  static ElevatedButtonThemeData _buildElevatedButtonTheme(Color primaryColor) {
+  static CardThemeData _buildCardTheme({
+    required Color color,
+    required Color shadowColor,
+  }) {
+    return CardThemeData(
+      color: color,
+      elevation: 2.0,
+      shadowColor: shadowColor,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppConstants.mediumRadius),
+      ),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    );
+  }
+
+  static BottomNavigationBarThemeData _buildBottomNavTheme({
+    required Color backgroundColor,
+    required Color selectedItemColor,
+    required Color unselectedItemColor,
+    required bool isDark,
+  }) {
+    return BottomNavigationBarThemeData(
+      backgroundColor: backgroundColor,
+      selectedItemColor: selectedItemColor,
+      unselectedItemColor: unselectedItemColor,
+      elevation: 8.0,
+      type: BottomNavigationBarType.fixed,
+      selectedLabelStyle: AppTextStyles.labelSmall(
+        isDark: isDark,
+      ).copyWith(fontWeight: FontWeight.w500),
+      unselectedLabelStyle: AppTextStyles.labelSmall(
+        isDark: isDark,
+      ).copyWith(fontWeight: FontWeight.w400),
+    );
+  }
+
+  static FloatingActionButtonThemeData _buildFloatingActionButtonTheme({
+    required Color backgroundColor,
+    required Color foregroundColor,
+  }) {
+    return FloatingActionButtonThemeData(
+      backgroundColor: backgroundColor,
+      foregroundColor: foregroundColor,
+      elevation: 6.0,
+      highlightElevation: 12.0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
+    );
+  }
+
+  static ElevatedButtonThemeData _buildElevatedButtonTheme({
+    required Color backgroundColor,
+    required Color foregroundColor,
+    required Color shadowColor,
+  }) {
     return ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: primaryColor,
-        foregroundColor: AppColors.white,
-        elevation: 2,
+        backgroundColor: backgroundColor,
+        foregroundColor: foregroundColor,
+        elevation: 2.0,
+        shadowColor: shadowColor,
         minimumSize: const Size(double.infinity, AppConstants.buttonHeight),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppConstants.largeSpacing,
+          vertical: AppConstants.mediumSpacing,
+        ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppConstants.mediumRadius),
         ),
-        textStyle: AppTextStyles.buttonMedium,
+        textStyle: AppTextStyles.buttonMedium(color: foregroundColor),
       ),
     );
   }
@@ -229,10 +343,14 @@ class AppTheme {
         foregroundColor: primaryColor,
         side: BorderSide(color: primaryColor, width: 1.5),
         minimumSize: const Size(double.infinity, AppConstants.buttonHeight),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppConstants.largeSpacing,
+          vertical: AppConstants.mediumSpacing,
+        ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppConstants.mediumRadius),
         ),
-        textStyle: AppTextStyles.buttonMedium.copyWith(color: primaryColor),
+        textStyle: AppTextStyles.buttonMedium(color: primaryColor),
       ),
     );
   }
@@ -241,7 +359,12 @@ class AppTheme {
     return TextButtonThemeData(
       style: TextButton.styleFrom(
         foregroundColor: primaryColor,
-        textStyle: AppTextStyles.buttonMedium.copyWith(color: primaryColor),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppConstants.mediumSpacing,
+          vertical: AppConstants.smallSpacing,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+        textStyle: AppTextStyles.buttonSmall(color: primaryColor),
       ),
     );
   }
@@ -250,6 +373,7 @@ class AppTheme {
     required Color fillColor,
     required Color borderColor,
     required Color focusColor,
+    required bool isDark,
   }) {
     return InputDecorationTheme(
       filled: true,
@@ -268,46 +392,184 @@ class AppTheme {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppConstants.mediumRadius),
-        borderSide: BorderSide(color: focusColor, width: 2),
+        borderSide: BorderSide(color: focusColor, width: 2.0),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppConstants.mediumRadius),
-        borderSide: const BorderSide(color: AppColors.error),
+        borderSide: BorderSide(
+          color: AppColors.getErrorColor(isDark: isDark),
+          width: 1.5,
+        ),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppConstants.mediumRadius),
-        borderSide: const BorderSide(color: AppColors.error, width: 2),
+        borderSide: BorderSide(
+          color: AppColors.getErrorColor(isDark: isDark),
+          width: 2.0,
+        ),
       ),
-      hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey500),
-      labelStyle: AppTextStyles.labelMedium.copyWith(color: AppColors.grey700),
-      errorStyle: AppTextStyles.error,
+      labelStyle: AppTextStyles.labelMedium(
+        color: AppColors.getTextMediumEmphasisColor(isDark: isDark),
+        isDark: isDark,
+      ),
+      hintStyle: AppTextStyles.bodyMedium(
+        color: AppColors.getTextDisabledColor(isDark: isDark),
+        isDark: isDark,
+      ),
+      errorStyle: AppTextStyles.error(isDark: isDark),
     );
   }
 
-  static CardThemeData _buildCardTheme({
-    required Color color,
-    required Color shadowColor,
+  static SwitchThemeData _buildSwitchTheme({
+    required Color primaryColor,
+    required Color trackColor,
   }) {
-    return CardThemeData(
+    return SwitchThemeData(
+      thumbColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
+          return primaryColor;
+        }
+        return trackColor;
+      }),
+      trackColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
+          return primaryColor.withOpacity(0.3);
+        }
+        return trackColor.withOpacity(0.3);
+      }),
+    );
+  }
+
+  static CheckboxThemeData _buildCheckboxTheme({
+    required Color primaryColor,
+    required Color borderColor,
+  }) {
+    return CheckboxThemeData(
+      fillColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
+          return primaryColor;
+        }
+        return Colors.transparent;
+      }),
+      checkColor: WidgetStateProperty.all(AppColors.white),
+      side: BorderSide(color: borderColor, width: 2.0),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4.0)),
+    );
+  }
+
+  static RadioThemeData _buildRadioTheme({
+    required Color primaryColor,
+    required Color unselectedColor,
+  }) {
+    return RadioThemeData(
+      fillColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
+          return primaryColor;
+        }
+        return unselectedColor;
+      }),
+    );
+  }
+
+  static ProgressIndicatorThemeData _buildProgressIndicatorTheme({
+    required Color color,
+    required Color trackColor,
+  }) {
+    return ProgressIndicatorThemeData(
       color: color,
-      elevation: 2,
-      shadowColor: shadowColor,
+      linearTrackColor: trackColor,
+      circularTrackColor: trackColor,
+    );
+  }
+
+  static SliderThemeData _buildSliderTheme({
+    required Color primaryColor,
+    required Color trackColor,
+  }) {
+    return SliderThemeData(
+      activeTrackColor: primaryColor,
+      thumbColor: primaryColor,
+      overlayColor: primaryColor.withOpacity(0.2),
+      inactiveTrackColor: trackColor,
+      trackHeight: 4.0,
+    );
+  }
+
+  static TabBarThemeData _buildTabBarTheme({
+    required Color labelColor,
+    required Color unselectedLabelColor,
+    required Color indicatorColor,
+    required bool isDark,
+  }) {
+    return TabBarThemeData(
+      labelColor: labelColor,
+      unselectedLabelColor: unselectedLabelColor,
+      indicatorColor: indicatorColor,
+      indicatorSize: TabBarIndicatorSize.label,
+      labelStyle: AppTextStyles.labelLarge(
+        isDark: isDark,
+      ).copyWith(fontWeight: FontWeight.w600),
+      unselectedLabelStyle: AppTextStyles.labelLarge(
+        isDark: isDark,
+      ).copyWith(fontWeight: FontWeight.w400),
+    );
+  }
+
+  static TooltipThemeData _buildTooltipTheme({
+    required Color backgroundColor,
+    required Color textColor,
+    required bool isDark,
+  }) {
+    return TooltipThemeData(
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(8.0),
+      ),
+      textStyle: AppTextStyles.bodySmall(color: textColor, isDark: isDark),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    );
+  }
+
+  static SnackBarThemeData _buildSnackBarTheme({
+    required Color backgroundColor,
+    required Color contentTextColor,
+    required Color actionTextColor,
+  }) {
+    return SnackBarThemeData(
+      backgroundColor: backgroundColor,
+      contentTextStyle: GoogleFonts.inter(
+        color: contentTextColor,
+        fontSize: 14,
+        fontWeight: FontWeight.w400,
+      ),
+      actionTextColor: actionTextColor,
+      behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppConstants.mediumRadius),
       ),
     );
   }
 
-  static BottomNavigationBarThemeData _buildBottomNavTheme({
+  static ChipThemeData _buildChipTheme({
     required Color backgroundColor,
-    required Color selectedItemColor,
+    required Color selectedColor,
+    required Color labelColor,
+    required Color secondaryLabelColor,
+    required bool isDark,
   }) {
-    return BottomNavigationBarThemeData(
+    return ChipThemeData(
       backgroundColor: backgroundColor,
-      selectedItemColor: selectedItemColor,
-      unselectedItemColor: AppColors.grey500,
-      type: BottomNavigationBarType.fixed,
-      elevation: 8,
+      selectedColor: selectedColor,
+      labelStyle: AppTextStyles.labelSmall(
+        color: labelColor,
+        isDark: isDark,
+      ).copyWith(fontWeight: FontWeight.w500),
+      secondaryLabelStyle: AppTextStyles.labelSmall(
+        color: secondaryLabelColor,
+        isDark: isDark,
+      ).copyWith(fontWeight: FontWeight.w500),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
     );
   }
 

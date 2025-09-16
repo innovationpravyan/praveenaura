@@ -55,7 +55,7 @@ class DefaultFirebaseOptions {
     appId: '1:935482127807:android:2c12ae50978399e53f5d0a',
     messagingSenderId: '935482127807',
     projectId: 'auradb-21288',
-    storageBucket: 'auradb-21288.firebasestorage.app',
+    storageBucket: 'portfolio-1952e.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(

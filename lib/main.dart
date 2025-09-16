@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'config/app_router.dart';
 import 'core/theme/app_theme.dart';
-import 'features/auth/screens/splash_screen.dart';
 import 'firebase_options.dart';
 import 'providers/auth_provider.dart';
 
@@ -39,9 +38,10 @@ class AuraBeautyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Watch auth state for theme updates
     final authState = ref.watch(authProvider);
 
-    // Theme based on gender or default
+    // Theme based on gender and system theme
     ThemeData lightTheme;
     ThemeData darkTheme;
 
@@ -49,6 +49,7 @@ class AuraBeautyApp extends ConsumerWidget {
       lightTheme = AppTheme.maleLightTheme;
       darkTheme = AppTheme.maleDarkTheme;
     } else {
+      // Default to female theme for new users or when gender is not set
       lightTheme = AppTheme.femaleLightTheme;
       darkTheme = AppTheme.femaleDarkTheme;
     }
@@ -60,11 +61,14 @@ class AuraBeautyApp extends ConsumerWidget {
       theme: lightTheme,
       darkTheme: darkTheme,
       themeMode: ThemeMode.system,
-      home: const SplashScreen(),
+      // Use route-based navigation instead of fixed home
+      initialRoute: AppRoutes.initial,
       onGenerateRoute: AppRouter.onGenerateRoute,
+      navigatorObservers: [AppRouter.routeObserver],
       builder: (context, child) {
         return MediaQuery(
           data: MediaQuery.of(context).copyWith(
+            // Ensure text scaling is within reasonable limits for beauty app UI
             textScaler: MediaQuery.of(
               context,
             ).textScaler.clamp(minScaleFactor: 0.8, maxScaleFactor: 1.2),

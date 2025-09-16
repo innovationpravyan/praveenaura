@@ -14,24 +14,30 @@ class AuthState {
     this.isLoading = false,
     this.error,
     this.isGuest = false,
+    this.isInitialized = false,
   });
 
   final UserModel? user;
   final bool isLoading;
   final String? error;
-  final bool isGuest; // New field for guest mode
+  final bool isGuest;
+  final bool isInitialized; // New field to track initialization
 
   AuthState copyWith({
     UserModel? user,
     bool? isLoading,
     String? error,
     bool? isGuest,
+    bool? isInitialized,
+    bool clearUser = false,
+    bool clearError = false,
   }) {
     return AuthState(
-      user: user ?? this.user,
+      user: clearUser ? null : (user ?? this.user),
       isLoading: isLoading ?? this.isLoading,
-      error: error,
+      error: clearError ? null : (error ?? this.error),
       isGuest: isGuest ?? this.isGuest,
+      isInitialized: isInitialized ?? this.isInitialized,
     );
   }
 
@@ -43,9 +49,16 @@ class AuthState {
 
   // User needs to login for premium features
   bool get requiresLogin => isGuest || user == null;
+
+  @override
+  String toString() {
+    return 'AuthState(user: ${user?.displayName}, isLoading: $isLoading, '
+        'error: $error, isGuest: $isGuest, isInitialized: $isInitialized, '
+        'isAuthenticated: $isAuthenticated, isFullyAuthenticated: $isFullyAuthenticated)';
+  }
 }
 
-// Auth Notifier with guest mode support
+// Auth Notifier with improved state management
 class AuthNotifier extends Notifier<AuthState> {
   FirebaseService? _firebaseService;
   StreamSubscription<User?>? _authSubscription;
@@ -70,22 +83,46 @@ class AuthNotifier extends Notifier<AuthState> {
     ) async {
       try {
         if (user != null) {
+          // User is signed in
           final userModel = await _firebaseService!.getUserData(user.uid);
-          state = state.copyWith(
-            user: userModel,
-            error: null,
-            isLoading: false,
-            isGuest: false, // Clear guest mode when user logs in
-          );
-        } else {
-          // Check if we were in guest mode
-          if (!state.isGuest) {
-            // User signed out, reset to initial state
-            state = const AuthState(
-              user: null,
-              error: null,
+          if (userModel != null) {
+            state = state.copyWith(
+              user: userModel,
               isLoading: false,
               isGuest: false,
+              isInitialized: true,
+              clearError: true,
+            );
+          } else {
+            // User exists but no document, clear auth
+            await _firebaseService!.signOut();
+            state = state.copyWith(
+              clearUser: true,
+              isLoading: false,
+              isGuest: false,
+              isInitialized: true,
+              error: 'User data not found. Please contact support.',
+            );
+          }
+        } else {
+          // User signed out or not signed in
+          if (state.isGuest) {
+            // If we were in guest mode, maintain it
+            state = state.copyWith(
+              clearUser: true,
+              isLoading: false,
+              isGuest: true,
+              isInitialized: true,
+              clearError: true,
+            );
+          } else {
+            // Normal sign out
+            state = state.copyWith(
+              clearUser: true,
+              isLoading: false,
+              isGuest: false,
+              isInitialized: true,
+              clearError: true,
             );
           }
         }
@@ -93,6 +130,7 @@ class AuthNotifier extends Notifier<AuthState> {
         state = state.copyWith(
           error: 'Failed to load user data: ${e.toString()}',
           isLoading: false,
+          isInitialized: true,
         );
       }
     });
@@ -100,12 +138,19 @@ class AuthNotifier extends Notifier<AuthState> {
 
   // Continue as guest (limited access)
   void continueAsGuest() {
-    state = state.copyWith(isGuest: true, isLoading: false, error: null);
+    print('AuthNotifier: Continuing as guest');
+    state = state.copyWith(
+      isGuest: true,
+      isLoading: false,
+      isInitialized: true,
+      clearError: true,
+    );
   }
 
   // Exit guest mode (forces user to login)
   void exitGuestMode() {
-    state = state.copyWith(isGuest: false, isLoading: false, error: null);
+    print('AuthNotifier: Exiting guest mode');
+    state = state.copyWith(isGuest: false, isLoading: false, clearError: true);
   }
 
   // Check if feature requires authentication
@@ -129,7 +174,8 @@ class AuthNotifier extends Notifier<AuthState> {
   // Email/Password Sign In
   Future<void> signIn(String email, String password) async {
     try {
-      state = state.copyWith(isLoading: true, error: null);
+      print('AuthNotifier: Starting sign in for $email');
+      state = state.copyWith(isLoading: true, clearError: true);
 
       final userCredential = await _firebaseService!.signInWithEmailAndPassword(
         email.trim(),
@@ -138,14 +184,20 @@ class AuthNotifier extends Notifier<AuthState> {
 
       if (userCredential.user != null) {
         await _firebaseService!.updateLastLoginTime(userCredential.user!.uid);
+        print('AuthNotifier: Sign in successful');
+        // State will be updated by the auth state listener
       }
     } on FirebaseAuthException catch (e) {
+      print(
+        'AuthNotifier: Sign in failed with FirebaseAuthException: ${e.code}',
+      );
       state = state.copyWith(
         isLoading: false,
         error: _getAuthErrorMessage(e.code),
       );
       throw AuthException(_getAuthErrorMessage(e.code), e.code);
     } catch (e) {
+      print('AuthNotifier: Sign in failed with unexpected error: $e');
       state = state.copyWith(
         isLoading: false,
         error: 'An unexpected error occurred',
@@ -163,7 +215,8 @@ class AuthNotifier extends Notifier<AuthState> {
     required String gender,
   }) async {
     try {
-      state = state.copyWith(isLoading: true, error: null);
+      print('AuthNotifier: Starting sign up for $email');
+      state = state.copyWith(isLoading: true, clearError: true);
 
       final userCredential = await _firebaseService!
           .createUserWithEmailAndPassword(email.trim(), password);
@@ -185,14 +238,34 @@ class AuthNotifier extends Notifier<AuthState> {
         );
 
         await _firebaseService!.createUserDocument(userModel);
+
+        print('AuthNotifier: Sign up successful, signing out user');
+
+        // Sign out the user after successful registration
+        await _firebaseService!.signOut();
+
+        // Update state to reflect successful registration but not authenticated
+        state = state.copyWith(
+          isLoading: false,
+          isGuest: false,
+          isInitialized: true,
+          clearUser: true,
+          clearError: true,
+        );
+
+        print('AuthNotifier: User signed out after registration');
       }
     } on FirebaseAuthException catch (e) {
+      print(
+        'AuthNotifier: Sign up failed with FirebaseAuthException: ${e.code}',
+      );
       state = state.copyWith(
         isLoading: false,
         error: _getAuthErrorMessage(e.code),
       );
       throw AuthException(_getAuthErrorMessage(e.code), e.code);
     } catch (e) {
+      print('AuthNotifier: Sign up failed with unexpected error: $e');
       state = state.copyWith(
         isLoading: false,
         error: 'An unexpected error occurred',
@@ -204,13 +277,23 @@ class AuthNotifier extends Notifier<AuthState> {
   // Sign Out
   Future<void> signOut() async {
     try {
-      state = state.copyWith(isLoading: true, error: null);
+      print('AuthNotifier: Starting sign out');
+      state = state.copyWith(isLoading: true, clearError: true);
 
       await _firebaseService!.signOut();
 
+      print('AuthNotifier: Sign out completed');
+
       // Reset to initial state (not guest mode)
-      state = const AuthState(isLoading: false);
+      state = state.copyWith(
+        clearUser: true,
+        isLoading: false,
+        isGuest: false,
+        isInitialized: true,
+        clearError: true,
+      );
     } catch (e) {
+      print('AuthNotifier: Sign out failed: $e');
       state = state.copyWith(
         isLoading: false,
         error: 'Sign out failed: ${e.toString()}',
@@ -222,18 +305,22 @@ class AuthNotifier extends Notifier<AuthState> {
   // Send Password Reset Email
   Future<void> sendPasswordResetEmail(String email) async {
     try {
-      state = state.copyWith(isLoading: true, error: null);
+      print('AuthNotifier: Sending password reset email to $email');
+      state = state.copyWith(isLoading: true, clearError: true);
 
       await _firebaseService!.sendPasswordResetEmail(email.trim());
 
       state = state.copyWith(isLoading: false);
+      print('AuthNotifier: Password reset email sent');
     } on FirebaseAuthException catch (e) {
+      print('AuthNotifier: Password reset failed: ${e.code}');
       state = state.copyWith(
         isLoading: false,
         error: _getAuthErrorMessage(e.code),
       );
       throw AuthException(_getAuthErrorMessage(e.code), e.code);
     } catch (e) {
+      print('AuthNotifier: Password reset failed with unexpected error: $e');
       state = state.copyWith(
         isLoading: false,
         error: 'Failed to send reset email',
@@ -296,7 +383,7 @@ class AuthNotifier extends Notifier<AuthState> {
 
   // Clear Error
   void clearError() {
-    state = state.copyWith(error: null);
+    state = state.copyWith(clearError: true);
   }
 
   // Helper method to get user-friendly error messages
@@ -320,6 +407,8 @@ class AuthNotifier extends Notifier<AuthState> {
         return 'Network error. Please check your internet connection';
       case 'operation-not-allowed':
         return 'This sign-in method is not enabled';
+      case 'invalid-credential':
+        return 'The provided credentials are invalid';
       case 'guest-mode-restriction':
         return 'Please login to access this feature';
       default:
@@ -360,4 +449,8 @@ final isLoadingProvider = Provider<bool>((ref) {
 
 final authErrorProvider = Provider<String?>((ref) {
   return ref.watch(authProvider.select((state) => state.error));
+});
+
+final isInitializedProvider = Provider<bool>((ref) {
+  return ref.watch(authProvider.select((state) => state.isInitialized));
 });
