@@ -134,7 +134,7 @@ class WishlistScreen extends ConsumerWidget {
             ),
             context.responsiveLargeVerticalSpacing,
             ElevatedButton(
-              onPressed: () => context.navigateToSearch(),
+              onPressed: () => context.navigateToExplore(),
               child: const Text('Explore Services'),
             ),
           ],

@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class PerformanceUtils {
-  // Debounce utility for search and other frequent operations
+  // Debounce utility for explore and other frequent operations
   static void debounce(VoidCallback callback, {Duration delay = const Duration(milliseconds: 300)}) {
     _DebounceTimer.cancel();
     _DebounceTimer.start(callback, delay);

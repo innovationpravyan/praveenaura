@@ -31,8 +31,8 @@ extension BuildContextExtensions on BuildContext {
     await navigator.pushReplacementNamed(AppRoutes.home);
   }
 
-  Future<void> navigateToSearch() async {
-    await navigator.pushReplacementNamed(AppRoutes.search);
+  Future<void> navigateToExplore() async {
+    await navigator.pushReplacementNamed(AppRoutes.explore);
   }
 
   Future<void> navigateToBookingHistory() async {

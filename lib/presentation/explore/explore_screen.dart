@@ -3,22 +3,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/performance_utils.dart';
-import '../../core/widgets/loading_widget.dart';
-import '../../core/widgets/error_widget.dart';
 import '../../models/salon_model.dart';
 import '../../models/service_model.dart';
 import '../../providers/salon_provider.dart';
 import '../../providers/service_provider.dart';
 import '../../widgets/base_screen.dart';
 
-class SearchScreen extends ConsumerStatefulWidget {
-  const SearchScreen({super.key});
+class ExploreScreen extends ConsumerStatefulWidget {
+  const ExploreScreen({super.key});
 
   @override
-  ConsumerState<SearchScreen> createState() => _SearchScreenState();
+  ConsumerState<ExploreScreen> createState() => _ExploreScreenState();
 }
 
-class _SearchScreenState extends ConsumerState<SearchScreen> {
+class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   String _selectedCategory = 'All';
@@ -94,11 +92,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final salonState = ref.read(salonProvider);
 
     final serviceResults = serviceState.services.where((service) {
-      final matchesQuery = service.name.toLowerCase().contains(query.toLowerCase()) ||
+      final matchesQuery =
+          service.name.toLowerCase().contains(query.toLowerCase()) ||
           service.description.toLowerCase().contains(query.toLowerCase()) ||
           service.category.toLowerCase().contains(query.toLowerCase());
 
-      final matchesCategory = _selectedCategory == 'All' ||
+      final matchesCategory =
+          _selectedCategory == 'All' ||
           service.category.toLowerCase() == _selectedCategory.toLowerCase();
 
       return matchesQuery && matchesCategory;
@@ -115,7 +115,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       _isSearching = false;
     });
 
-    // Add to search history
+    // Add to explore history
     if (query.isNotEmpty && !_searchHistory.contains(query)) {
       setState(() {
         _searchHistory.insert(0, query);
@@ -129,6 +129,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     return BaseScreen(
+      initialIndex: 1,
       child: Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: _buildAppBar(),
@@ -137,8 +138,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             _buildSearchFilters(),
             Expanded(
               child: _searchQuery.isEmpty
-                ? _buildSearchSuggestions()
-                : _buildSearchResults(),
+                  ? _buildSearchSuggestions()
+                  : _buildSearchResults(),
             ),
           ],
         ),
@@ -213,7 +214,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   _selectedCategory = selected ? category : 'All';
                 });
               },
-              selectedColor: Theme.of(context).primaryColor.withValues(alpha: 0.2),
+              selectedColor: Theme.of(
+                context,
+              ).primaryColor.withValues(alpha: 0.2),
               checkmarkColor: Theme.of(context).primaryColor,
             ),
           );
@@ -249,9 +252,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
-      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-        fontWeight: FontWeight.w600,
-      ),
+      style: Theme.of(
+        context,
+      ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
     );
   }
 
@@ -326,9 +329,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             child: Center(
               child: Text(
                 category,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w500,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
               ),
             ),
           ),
@@ -338,7 +341,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   }
 
   Widget _buildSearchResults() {
-    // Mock search results - in real app, this would fetch from backend
+    // Mock explore results - in real app, this would fetch from backend
     final mockResults = _getMockSearchResults();
 
     if (mockResults.isEmpty) {
@@ -371,7 +374,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Try adjusting your search terms or filters',
+            'Try adjusting your explore terms or filters',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Theme.of(context).disabledColor,
             ),
@@ -397,9 +400,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   child: Container(
                     width: 60,
                     height: 60,
-                    color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                    color: Theme.of(
+                      context,
+                    ).primaryColor.withValues(alpha: 0.1),
                     child: Icon(
-                      result['type'] == 'salon' ? Icons.store : Icons.design_services,
+                      result['type'] == 'salon'
+                          ? Icons.store
+                          : Icons.design_services,
                       color: Theme.of(context).primaryColor,
                     ),
                   ),
@@ -411,9 +418,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                     children: [
                       Text(
                         result['name'],
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w600),
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -429,7 +435,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                             Icons.star,
                             size: 16,
                             color: AppColors.getWarningColor(
-                              isDark: Theme.of(context).brightness == Brightness.dark,
+                              isDark:
+                                  Theme.of(context).brightness ==
+                                  Brightness.dark,
                             ),
                           ),
                           const SizedBox(width: 4),
@@ -462,7 +470,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   }
 
   List<Map<String, dynamic>> _getMockSearchResults() {
-    // Mock data - in real app, this would filter based on search query
+    // Mock data - in real app, this would filter based on explore query
     final allResults = [
       {
         'type': 'salon',
@@ -492,8 +500,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     return allResults.where((result) {
       final query = _searchQuery.toLowerCase();
       return result['name'].toString().toLowerCase().contains(query) ||
-             result['description'].toString().toLowerCase().contains(query);
+          result['description'].toString().toLowerCase().contains(query);
     }).toList();
   }
-
 }

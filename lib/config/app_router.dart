@@ -18,7 +18,7 @@ import '../presentation/onboarding/onboarding_screen.dart';
 import '../presentation/profile/edit_profile_screen.dart';
 import '../presentation/profile/profile_screen.dart';
 import '../presentation/salon/salon_detail_screen.dart';
-import '../presentation/search/search_screen.dart';
+import '../presentation/explore/explore_screen.dart';
 import '../presentation/settings/settings_screen.dart';
 import '../presentation/splash/splash_screen.dart';
 import '../presentation/support/support_screen.dart';
@@ -37,7 +37,7 @@ abstract class AppRoutes {
 
   // Main App Navigation Routes
   static const String home = '/home';
-  static const String search = '/search';
+  static const String explore = '/explore';
   static const String bookings = '/bookings';
   static const String profile = '/profile';
 
@@ -74,7 +74,7 @@ abstract class AppRoutes {
   // Routes that require at least guest access
   static const List<String> guestAccessRoutes = [
     home,
-    search,
+    explore,
     salonDetail,
     support,
     about,
@@ -376,8 +376,8 @@ class AppRouter {
       // Main App Routes
       case AppRoutes.home:
         return const HomeScreen();
-      case AppRoutes.search:
-        return const SearchScreen();
+      case AppRoutes.explore:
+        return const ExploreScreen();
       case AppRoutes.bookingHistory:
         return const BookingHistoryScreen();
       case AppRoutes.profile:
@@ -432,7 +432,7 @@ class AppRouter {
 
       // Main navigation - slide transition
       case AppRoutes.home:
-      case AppRoutes.search:
+      case AppRoutes.explore:
       case AppRoutes.bookings:
       case AppRoutes.profile:
         return RouteTransition.slide;

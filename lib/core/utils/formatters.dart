@@ -186,7 +186,7 @@ class Formatters {
     return reference.toUpperCase();
   }
 
-  // Clean and format search query
+  // Clean and format explore query
   static String formatSearchQuery(String query) {
     return query.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
   }

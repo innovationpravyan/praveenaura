@@ -33,7 +33,7 @@ class LocationUtils {
     return degrees * (pi / 180);
   }
 
-  // Check if location is within search radius
+  // Check if location is within explore radius
   static bool isWithinRadius(
       double userLat,
       double userLon,
@@ -220,7 +220,7 @@ class LocationUtils {
         int zoom = 15,
       }) {
     final labelParam = label != null ? '($label)' : '';
-    return 'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude$labelParam&zoom=$zoom';
+    return 'https://www.google.com/maps/explore/?api=1&query=$latitude,$longitude$labelParam&zoom=$zoom';
   }
 
   // Generate directions URL

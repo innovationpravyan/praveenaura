@@ -507,7 +507,7 @@ class ProfileScreen extends ConsumerWidget {
             'Browse Services',
             'Explore beauty services near you',
             Icons.spa_outlined,
-                () => context.navigateToSearch(),
+                () => context.navigateToExplore(),
             false,
           ),
           _buildMenuItem(
@@ -515,7 +515,7 @@ class ProfileScreen extends ConsumerWidget {
             'Find Salons',
             'Discover top-rated salons',
             Icons.store_outlined,
-                () => context.navigateToSearch(),
+                () => context.navigateToExplore(),
             false,
           ),
         ]),

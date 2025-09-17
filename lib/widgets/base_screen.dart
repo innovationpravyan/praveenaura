@@ -57,7 +57,7 @@ class _BaseScreenState extends State<BaseScreen> with WidgetsBindingObserver {
 
   final List<String> _navigationPaths = [
     AppRoutes.home,
-    AppRoutes.search,
+    AppRoutes.explore,
     AppRoutes.bookingHistory,
     AppRoutes.profile,
   ];
@@ -187,10 +187,9 @@ class _BaseScreenState extends State<BaseScreen> with WidgetsBindingObserver {
 
     if (widget.safeArea) {
       child = SafeArea(
-        child: child,
-        // Maintain safe area for specific areas
         top: widget.showAppBar ? false : true,
         bottom: widget.showBottomNavigation ? false : true,
+        child: child,
       );
     }
 

@@ -1,4 +1,4 @@
-// Fixed HomeScreen with Proper Responsive Design and Theme Integration
+// Updated HomeScreen with proper booking navigation
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,7 +8,6 @@ import '../../core/extensions/context_extensions.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/salon_provider.dart';
 import '../../providers/service_provider.dart';
-import '../../providers/notification_provider.dart';
 import '../../widgets/base_screen.dart';
 import './widgets/gender_toggle_widget.dart';
 import './widgets/location_header_widget.dart';
@@ -44,7 +43,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       "title": "New Year Special Offer",
       "subtitle": "Get 30% off on all services",
       "image":
-          "https://images.unsplash.com/photo-1560066984-138dadb4c035?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3",
+      "https://images.unsplash.com/photo-1560066984-138dadb4c035?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3",
       "discount": "30% OFF",
     },
     {
@@ -52,7 +51,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       "title": "Premium Hair Treatment",
       "subtitle": "Transform your look today",
       "image":
-          "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3",
+      "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3",
       "discount": "20% OFF",
     },
   ];
@@ -62,7 +61,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       "id": 1,
       "name": "Glamour Studio",
       "image":
-          "https://images.unsplash.com/photo-1560066984-138dadb4c035?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3",
+      "https://images.unsplash.com/photo-1560066984-138dadb4c035?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3",
       "rating": 4.8,
       "reviewCount": 245,
       "distance": "0.5 km",
@@ -75,7 +74,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       "id": 2,
       "name": "Beauty Lounge",
       "image":
-          "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3",
+      "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3",
       "rating": 4.6,
       "reviewCount": 189,
       "distance": "0.8 km",
@@ -87,49 +86,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       "id": 3,
       "name": "Elite Salon",
       "image":
-          "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3",
+      "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3",
       "rating": 4.9,
       "reviewCount": 312,
       "distance": "1.2 km",
       "startingPrice": "₹35",
       "isOpen": false,
       "isFavorite": false,
-    },
-  ];
-
-  final List<Map<String, dynamic>> _popularServices = [
-    {
-      "id": 1,
-      "name": "Hair Cut & Styling",
-      "image":
-          "https://images.unsplash.com/photo-1560066984-138dadb4c035?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3",
-      "rating": 4.8,
-      "bookingCount": 1250,
-      "price": "₹35",
-      "duration": "45 min",
-      "isPopular": true,
-    },
-    {
-      "id": 2,
-      "name": "Facial Treatment",
-      "image":
-          "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3",
-      "rating": 4.7,
-      "bookingCount": 890,
-      "price": "₹50",
-      "duration": "60 min",
-      "isPopular": false,
-    },
-    {
-      "id": 3,
-      "name": "Manicure & Pedicure",
-      "image":
-          "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3",
-      "rating": 4.5,
-      "bookingCount": 650,
-      "price": "₹40",
-      "duration": "30 min",
-      "isPopular": true,
     },
   ];
 
@@ -522,7 +485,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   }
 
   void _onSearchTap() {
-    context.navigateToSearch();
+    Navigator.of(context).pushNamed(AppRoutes.explore);
   }
 
   void _onServiceTap(Map<String, dynamic> service) {
@@ -530,7 +493,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     if (authState.requiresLogin) {
       _showAuthRequiredDialog(context);
     } else {
-      context.showInfoSnackBar('Service details: ${service['name']}');
+      // Navigate directly to booking flow with pre-selected service
+      _navigateToBookingFlow(serviceId: service['id'].toString());
     }
   }
 
@@ -539,7 +503,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     if (authState.requiresLogin) {
       _showAuthRequiredDialog(context);
     } else {
-      context.showInfoSnackBar('Salon details: ${salon['name']}');
+      // Navigate to salon detail screen
+      Navigator.of(context).pushNamed(
+        AppRoutes.salonDetail,
+        arguments: salon['id'].toString(),
+      );
     }
   }
 
@@ -552,7 +520,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         final index = _nearbySalons.indexWhere((s) => s['id'] == salon['id']);
         if (index != -1) {
           _nearbySalons[index]['isFavorite'] =
-              !(_nearbySalons[index]['isFavorite'] as bool);
+          !(_nearbySalons[index]['isFavorite'] as bool);
 
           final isFavorite = _nearbySalons[index]['isFavorite'] as bool;
           context.showSuccessSnackBar(
@@ -576,13 +544,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     HapticFeedback.lightImpact();
   }
 
+  // Main booking action handler - This is the key update
   void _handleBookingAction(BuildContext context, AuthState authState) {
     if (authState.requiresLogin) {
       _showAuthRequiredDialog(context);
     } else {
-      context.showInfoSnackBar('Quick booking feature coming soon!');
-      HapticFeedback.mediumImpact();
+      // Navigate to booking flow
+      _navigateToBookingFlow();
     }
+  }
+
+  // Navigate to booking flow with optional parameters
+  void _navigateToBookingFlow({String? salonId, String? serviceId}) {
+    final Map<String, dynamic> arguments = {};
+
+    if (salonId != null) {
+      arguments['salonId'] = salonId;
+    }
+
+    if (serviceId != null) {
+      arguments['serviceId'] = serviceId;
+    }
+
+    // Add haptic feedback for better UX
+    HapticFeedback.mediumImpact();
+
+    Navigator.of(context).pushNamed(
+      AppRoutes.bookingFlow,
+      arguments: arguments.isNotEmpty ? arguments : null,
+    );
   }
 
   Future<void> _onRefresh() async {
@@ -610,32 +600,38 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   }
 
   void _handlePremiumFeature(
-    BuildContext context,
-    AuthState authState,
-    String feature,
-  ) {
+      BuildContext context,
+      AuthState authState,
+      String feature,
+      ) {
     if (authState.requiresLogin) {
       _showAuthRequiredDialog(context);
     } else {
-      context.showInfoSnackBar('$feature feature coming soon!');
+      switch (feature) {
+        case 'notifications':
+          Navigator.of(context).pushNamed(AppRoutes.notifications);
+          break;
+        default:
+          context.showInfoSnackBar('$feature feature coming soon!');
+      }
     }
   }
 
   void _showAuthRequiredDialog(BuildContext context) {
     context
         .showConfirmDialog(
-          title: 'Login Required',
-          message:
-              'This feature requires a full account. Would you like to login or create an account?',
-          confirmText: 'Login',
-          cancelText: 'Cancel',
-          confirmColor: context.primaryColor,
-        )
+      title: 'Login Required',
+      message:
+      'This feature requires a full account. Would you like to login or create an account?',
+      confirmText: 'Login',
+      cancelText: 'Cancel',
+      confirmColor: context.primaryColor,
+    )
         .then((confirmed) {
-          if (confirmed == true && mounted) {
-            Navigator.of(context).pushReplacementNamed(AppRoutes.login);
-          }
-        });
+      if (confirmed == true && mounted) {
+        Navigator.of(context).pushReplacementNamed(AppRoutes.login);
+      }
+    });
   }
 
   void _showLocationBottomSheet() {
@@ -668,7 +664,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               context,
               'Use Current Location',
               Icons.my_location,
-              () {
+                  () {
                 Navigator.pop(context);
                 setState(() {
                   _currentLocation = 'Varanasi, UP';
@@ -684,7 +680,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               context,
               'Delhi, India',
               Icons.location_city,
-              () {
+                  () {
                 Navigator.pop(context);
                 setState(() {
                   _currentLocation = 'Delhi, India';
@@ -697,7 +693,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               context,
               'Mumbai, India',
               Icons.location_city,
-              () {
+                  () {
                 Navigator.pop(context);
                 setState(() {
                   _currentLocation = 'Mumbai, India';
@@ -714,12 +710,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   }
 
   Widget _buildLocationOption(
-    BuildContext context,
-    String title,
-    IconData icon,
-    VoidCallback onTap, {
-    bool isPrimary = false,
-  }) {
+      BuildContext context,
+      String title,
+      IconData icon,
+      VoidCallback onTap, {
+        bool isPrimary = false,
+      }) {
     return Container(
       margin: EdgeInsets.symmetric(
         vertical: context.responsiveSmallSpacing / 2,

@@ -261,14 +261,14 @@ class NotificationsScreen extends ConsumerWidget {
         context.navigateToBookingHistory();
         break;
       case 'offer':
-        context.navigateToSearch();
+        context.navigateToExplore();
         break;
       case 'service':
         // Navigate to rating/review screen
         context.showInfoSnackBar('Opening service details...');
         break;
       case 'info':
-        context.navigateToSearch();
+        context.navigateToExplore();
         break;
       default:
         context.showInfoSnackBar('Notification opened');

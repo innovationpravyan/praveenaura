@@ -1652,7 +1652,7 @@ class CustomIconWidget extends StatelessWidget {
       'sd_card': Icons.sd_card,
       'sd_card_alert': Icons.sd_card_alert,
       'sd_storage': Icons.sd_storage,
-      'search': Icons.search,
+      'explore': Icons.search,
       'search_off': Icons.search_off,
       'security': Icons.security,
       'security_update': Icons.security_update,
