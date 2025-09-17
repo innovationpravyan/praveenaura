@@ -19,6 +19,10 @@ class DatabaseService {
   CollectionReference get _salonsCollection => _firestore.collection('salons');
   CollectionReference get _servicesCollection => _firestore.collection('services');
   CollectionReference get _bookingsCollection => _firestore.collection('bookings');
+  CollectionReference get _notificationsCollection => _firestore.collection('notifications');
+  CollectionReference get _reviewsCollection => _firestore.collection('reviews');
+  CollectionReference get _categoriesCollection => _firestore.collection('categories');
+  CollectionReference get _promosCollection => _firestore.collection('promotions');
 
   // User operations
   Future<UserModel?> getUserById(String userId) async {
@@ -230,18 +234,27 @@ class DatabaseService {
   Future<void> resetAndUploadData() async {
     developer.log('Resetting Firestore data and uploading fresh sample data...');
     try {
-      // Delete all existing salon and service documents
-      final salonSnapshots = await _salonsCollection.get();
-      for (final doc in salonSnapshots.docs) {
-        await doc.reference.delete();
+      // Delete all existing documents from all collections
+      final collections = [
+        _usersCollection,
+        _salonsCollection,
+        _servicesCollection,
+        _bookingsCollection,
+        _notificationsCollection,
+        _reviewsCollection,
+        _categoriesCollection,
+        _promosCollection,
+      ];
+
+      for (final collection in collections) {
+        final snapshots = await collection.get();
+        for (final doc in snapshots.docs) {
+          await doc.reference.delete();
+        }
+        developer.log('Cleared ${collection.id} collection (${snapshots.docs.length} documents)');
       }
 
-      final serviceSnapshots = await _servicesCollection.get();
-      for (final doc in serviceSnapshots.docs) {
-        await doc.reference.delete();
-      }
-
-      developer.log('Existing data cleared. Uploading fresh sample data...');
+      developer.log('All existing data cleared. Uploading fresh sample data...');
 
       // Upload fresh sample data
       await _initializeSampleData();
@@ -334,11 +347,23 @@ class DatabaseService {
 
   // Initialize sample data in Firestore
   Future<void> _initializeSampleData() async {
-    developer.log('Initializing sample salon and service data...');
+    developer.log('Initializing comprehensive sample data for all collections...');
 
     try {
       final sampleSalons = _getMockSalons();
       final sampleServices = _getMockServices();
+      final sampleUsers = _getMockUsers();
+      final sampleBookings = _getMockBookings();
+      final sampleNotifications = _getMockNotifications();
+      final sampleReviews = _getMockReviews();
+      final sampleCategories = _getMockCategories();
+      final samplePromotions = _getMockPromotions();
+
+      // Add users to Firestore
+      for (final user in sampleUsers) {
+        await _usersCollection.doc(user.uid).set(user.toFirestore());
+        developer.log('Added user: ${user.displayName}');
+      }
 
       // Add salons to Firestore
       for (final salon in sampleSalons) {
@@ -352,7 +377,46 @@ class DatabaseService {
         developer.log('Added service: ${service.name}');
       }
 
-      developer.log('Sample data initialized successfully: ${sampleSalons.length} salons, ${sampleServices.length} services');
+      // Add bookings to Firestore
+      for (final booking in sampleBookings) {
+        await _bookingsCollection.doc(booking.id).set(_bookingToFirestore(booking));
+        developer.log('Added booking: ${booking.id}');
+      }
+
+      // Add notifications to Firestore
+      for (final notification in sampleNotifications) {
+        await _notificationsCollection.doc(notification['id']).set(notification);
+        developer.log('Added notification: ${notification['title']}');
+      }
+
+      // Add reviews to Firestore
+      for (final review in sampleReviews) {
+        await _reviewsCollection.doc(review['id']).set(review);
+        developer.log('Added review: ${review['id']}');
+      }
+
+      // Add categories to Firestore
+      for (final category in sampleCategories) {
+        await _categoriesCollection.doc(category['id']).set(category);
+        developer.log('Added category: ${category['name']}');
+      }
+
+      // Add promotions to Firestore
+      for (final promo in samplePromotions) {
+        await _promosCollection.doc(promo['id']).set(promo);
+        developer.log('Added promotion: ${promo['title']}');
+      }
+
+      developer.log('All sample data initialized successfully!');
+      developer.log('📊 Data Summary:');
+      developer.log('  - ${sampleUsers.length} users');
+      developer.log('  - ${sampleSalons.length} salons');
+      developer.log('  - ${sampleServices.length} services');
+      developer.log('  - ${sampleBookings.length} bookings');
+      developer.log('  - ${sampleNotifications.length} notifications');
+      developer.log('  - ${sampleReviews.length} reviews');
+      developer.log('  - ${sampleCategories.length} categories');
+      developer.log('  - ${samplePromotions.length} promotions');
     } catch (e) {
       developer.log('Error initializing sample data: $e');
       rethrow;
@@ -440,6 +504,29 @@ class DatabaseService {
       'totalReviews': service.totalReviews,
       'createdAt': service.createdAt?.toIso8601String(),
       'updatedAt': service.updatedAt?.toIso8601String(),
+    };
+  }
+
+  // Helper method to convert BookingModel to Firestore data
+  Map<String, dynamic> _bookingToFirestore(BookingModel booking) {
+    return {
+      'userId': booking.userId,
+      'salonId': booking.salonId,
+      'serviceIds': booking.serviceIds,
+      'bookingDateTime': booking.bookingDateTime.toIso8601String(),
+      'serviceType': booking.serviceType,
+      'totalAmount': booking.totalAmount,
+      'estimatedDuration': booking.estimatedDuration,
+      'status': booking.status,
+      'paymentStatus': booking.paymentStatus,
+      'paymentId': booking.paymentId,
+      'paymentMethod': booking.paymentMethod,
+      'specialRequests': booking.specialRequests,
+      'address': booking.address,
+      'cancellationReason': booking.cancellationReason,
+      'cancelledAt': booking.cancelledAt?.toIso8601String(),
+      'createdAt': booking.createdAt?.toIso8601String(),
+      'updatedAt': booking.updatedAt?.toIso8601String(),
     };
   }
 
@@ -873,6 +960,508 @@ class DatabaseService {
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       ),
+    ];
+  }
+
+  // Mock Users Data
+  List<UserModel> _getMockUsers() {
+    return [
+      UserModel(
+        uid: 'user_1',
+        email: 'priya.sharma@gmail.com',
+        displayName: 'Priya Sharma',
+        phoneNumber: '+91 9876543210',
+        photoURL: 'https://images.unsplash.com/photo-1494790108755-2616b612b47c?w=150',
+        gender: 'female',
+        dateOfBirth: DateTime(1995, 6, 15),
+        address: '123 Green Park',
+        city: 'Varanasi',
+        state: 'Uttar Pradesh',
+        pincode: '221001',
+        isEmailVerified: true,
+        createdAt: DateTime.now().subtract(const Duration(days: 30)),
+        updatedAt: DateTime.now(),
+        lastLoginAt: DateTime.now().subtract(const Duration(hours: 2)),
+      ),
+      UserModel(
+        uid: 'user_2',
+        email: 'aisha.khan@gmail.com',
+        displayName: 'Aisha Khan',
+        phoneNumber: '+91 9876543211',
+        photoURL: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150',
+        gender: 'female',
+        dateOfBirth: DateTime(1992, 3, 22),
+        address: '456 Mall Road',
+        city: 'Varanasi',
+        state: 'Uttar Pradesh',
+        pincode: '221002',
+        isEmailVerified: true,
+        createdAt: DateTime.now().subtract(const Duration(days: 45)),
+        updatedAt: DateTime.now(),
+        lastLoginAt: DateTime.now().subtract(const Duration(hours: 5)),
+      ),
+      UserModel(
+        uid: 'user_3',
+        email: 'kavya.patel@gmail.com',
+        displayName: 'Kavya Patel',
+        phoneNumber: '+91 9876543212',
+        photoURL: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150',
+        gender: 'female',
+        dateOfBirth: DateTime(1988, 11, 8),
+        address: '789 Sigra Road',
+        city: 'Varanasi',
+        state: 'Uttar Pradesh',
+        pincode: '221010',
+        isEmailVerified: true,
+        createdAt: DateTime.now().subtract(const Duration(days: 60)),
+        updatedAt: DateTime.now(),
+        lastLoginAt: DateTime.now().subtract(const Duration(days: 1)),
+      ),
+      UserModel(
+        uid: 'user_4',
+        email: 'riya.gupta@gmail.com',
+        displayName: 'Riya Gupta',
+        phoneNumber: '+91 9876543213',
+        photoURL: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+        gender: 'female',
+        dateOfBirth: DateTime(1990, 7, 14),
+        address: '321 Lanka Road',
+        city: 'Varanasi',
+        state: 'Uttar Pradesh',
+        pincode: '221005',
+        isEmailVerified: true,
+        createdAt: DateTime.now().subtract(const Duration(days: 15)),
+        updatedAt: DateTime.now(),
+        lastLoginAt: DateTime.now().subtract(const Duration(hours: 8)),
+      ),
+      UserModel(
+        uid: 'user_5',
+        email: 'sneha.singh@gmail.com',
+        displayName: 'Sneha Singh',
+        phoneNumber: '+91 9876543214',
+        photoURL: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+        gender: 'female',
+        dateOfBirth: DateTime(1993, 12, 3),
+        address: '654 Godowlia',
+        city: 'Varanasi',
+        state: 'Uttar Pradesh',
+        pincode: '221001',
+        isEmailVerified: true,
+        createdAt: DateTime.now().subtract(const Duration(days: 90)),
+        updatedAt: DateTime.now(),
+        lastLoginAt: DateTime.now().subtract(const Duration(minutes: 30)),
+      ),
+    ];
+  }
+
+  // Mock Bookings Data
+  List<BookingModel> _getMockBookings() {
+    final now = DateTime.now();
+    return [
+      BookingModel(
+        id: 'booking_1',
+        userId: 'user_1',
+        salonId: 'salon_1',
+        serviceIds: ['service_1', 'service_2'],
+        bookingDateTime: now.add(const Duration(days: 2, hours: 10)),
+        serviceType: 'salon',
+        totalAmount: 2000.0,
+        estimatedDuration: 150,
+        status: 'confirmed',
+        paymentStatus: 'paid',
+        paymentId: 'pay_abc123',
+        paymentMethod: 'upi',
+        specialRequests: 'Please use organic products',
+        createdAt: now.subtract(const Duration(days: 1)),
+        updatedAt: now.subtract(const Duration(days: 1)),
+      ),
+      BookingModel(
+        id: 'booking_2',
+        userId: 'user_2',
+        salonId: 'salon_2',
+        serviceIds: ['service_4'],
+        bookingDateTime: now.add(const Duration(days: 5, hours: 14)),
+        serviceType: 'salon',
+        totalAmount: 2500.0,
+        estimatedDuration: 120,
+        status: 'pending',
+        paymentStatus: 'pending',
+        specialRequests: 'First time customer',
+        createdAt: now.subtract(const Duration(hours: 6)),
+        updatedAt: now.subtract(const Duration(hours: 6)),
+      ),
+      BookingModel(
+        id: 'booking_3',
+        userId: 'user_3',
+        salonId: 'salon_3',
+        serviceIds: ['service_7'],
+        bookingDateTime: now.subtract(const Duration(days: 10)),
+        serviceType: 'salon',
+        totalAmount: 2000.0,
+        estimatedDuration: 120,
+        status: 'completed',
+        paymentStatus: 'paid',
+        paymentId: 'pay_xyz789',
+        paymentMethod: 'card',
+        createdAt: now.subtract(const Duration(days: 12)),
+        updatedAt: now.subtract(const Duration(days: 10)),
+      ),
+      BookingModel(
+        id: 'booking_4',
+        userId: 'user_4',
+        salonId: 'salon_1',
+        serviceIds: ['service_3'],
+        bookingDateTime: now.add(const Duration(days: 7, hours: 16)),
+        serviceType: 'home',
+        totalAmount: 5000.0,
+        estimatedDuration: 180,
+        status: 'confirmed',
+        paymentStatus: 'paid',
+        paymentId: 'pay_def456',
+        paymentMethod: 'wallet',
+        address: '321 Lanka Road, Varanasi',
+        specialRequests: 'Bridal makeup for wedding',
+        createdAt: now.subtract(const Duration(days: 3)),
+        updatedAt: now.subtract(const Duration(days: 3)),
+      ),
+      BookingModel(
+        id: 'booking_5',
+        userId: 'user_5',
+        salonId: 'salon_5',
+        serviceIds: ['service_11'],
+        bookingDateTime: now.subtract(const Duration(days: 5)),
+        serviceType: 'salon',
+        totalAmount: 6000.0,
+        estimatedDuration: 240,
+        status: 'completed',
+        paymentStatus: 'paid',
+        paymentId: 'pay_ghi789',
+        paymentMethod: 'upi',
+        specialRequests: 'Relaxing spa day',
+        createdAt: now.subtract(const Duration(days: 7)),
+        updatedAt: now.subtract(const Duration(days: 5)),
+      ),
+    ];
+  }
+
+  // Mock Notifications Data
+  List<Map<String, dynamic>> _getMockNotifications() {
+    final now = DateTime.now();
+    return [
+      {
+        'id': 'notif_1',
+        'userId': 'user_1',
+        'title': 'Booking Confirmed',
+        'body': 'Your appointment at Elegance Beauty Salon is confirmed for tomorrow at 10:00 AM',
+        'type': 'booking',
+        'data': {
+          'bookingId': 'booking_1',
+          'salonId': 'salon_1',
+        },
+        'isRead': false,
+        'createdAt': now.subtract(const Duration(hours: 2)).toIso8601String(),
+      },
+      {
+        'id': 'notif_2',
+        'userId': 'user_2',
+        'title': 'Special Offer',
+        'body': '20% off on all hair treatments this weekend! Book now.',
+        'type': 'promotion',
+        'data': {
+          'promoCode': 'HAIR20',
+          'category': 'Hair Care',
+        },
+        'isRead': true,
+        'createdAt': now.subtract(const Duration(days: 1)).toIso8601String(),
+      },
+      {
+        'id': 'notif_3',
+        'userId': 'user_3',
+        'title': 'Appointment Reminder',
+        'body': 'Reminder: Your spa appointment is tomorrow at 2:00 PM',
+        'type': 'reminder',
+        'data': {
+          'bookingId': 'booking_3',
+          'salonId': 'salon_5',
+        },
+        'isRead': false,
+        'createdAt': now.subtract(const Duration(hours: 12)).toIso8601String(),
+      },
+      {
+        'id': 'notif_4',
+        'userId': 'user_4',
+        'title': 'Payment Successful',
+        'body': 'Payment of ₹5000 for bridal makeup package completed successfully',
+        'type': 'payment',
+        'data': {
+          'bookingId': 'booking_4',
+          'amount': 5000,
+          'paymentId': 'pay_def456',
+        },
+        'isRead': true,
+        'createdAt': now.subtract(const Duration(days: 3)).toIso8601String(),
+      },
+      {
+        'id': 'notif_5',
+        'userId': 'user_5',
+        'title': 'Review Request',
+        'body': 'How was your spa experience? Please rate and review.',
+        'type': 'review',
+        'data': {
+          'bookingId': 'booking_5',
+          'salonId': 'salon_5',
+        },
+        'isRead': false,
+        'createdAt': now.subtract(const Duration(days: 4)).toIso8601String(),
+      },
+    ];
+  }
+
+  // Mock Reviews Data
+  List<Map<String, dynamic>> _getMockReviews() {
+    final now = DateTime.now();
+    return [
+      {
+        'id': 'review_1',
+        'userId': 'user_1',
+        'salonId': 'salon_1',
+        'bookingId': 'booking_1',
+        'serviceIds': ['service_1', 'service_2'],
+        'rating': 5.0,
+        'comment': 'Excellent service! The staff was very professional and the results were amazing.',
+        'images': ['https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=500'],
+        'isVerified': true,
+        'helpfulCount': 12,
+        'createdAt': now.subtract(const Duration(days: 7)).toIso8601String(),
+        'updatedAt': now.subtract(const Duration(days: 7)).toIso8601String(),
+      },
+      {
+        'id': 'review_2',
+        'userId': 'user_2',
+        'salonId': 'salon_2',
+        'bookingId': 'booking_2',
+        'serviceIds': ['service_4'],
+        'rating': 4.0,
+        'comment': 'Good hair coloring service. Happy with the results, will come back.',
+        'images': [],
+        'isVerified': true,
+        'helpfulCount': 8,
+        'createdAt': now.subtract(const Duration(days: 15)).toIso8601String(),
+        'updatedAt': now.subtract(const Duration(days: 15)).toIso8601String(),
+      },
+      {
+        'id': 'review_3',
+        'userId': 'user_3',
+        'salonId': 'salon_5',
+        'bookingId': 'booking_5',
+        'serviceIds': ['service_11'],
+        'rating': 5.0,
+        'comment': 'Best spa experience ever! Very relaxing and rejuvenating. Highly recommended.',
+        'images': ['https://images.unsplash.com/photo-1544161515-4ab6ce6db874?q=80&w=500'],
+        'isVerified': true,
+        'helpfulCount': 25,
+        'createdAt': now.subtract(const Duration(days: 3)).toIso8601String(),
+        'updatedAt': now.subtract(const Duration(days: 3)).toIso8601String(),
+      },
+      {
+        'id': 'review_4',
+        'userId': 'user_4',
+        'salonId': 'salon_3',
+        'serviceIds': ['service_7'],
+        'rating': 4.5,
+        'comment': 'Great anti-aging facial. Skin feels much better and looks younger.',
+        'images': [],
+        'isVerified': true,
+        'helpfulCount': 6,
+        'createdAt': now.subtract(const Duration(days: 12)).toIso8601String(),
+        'updatedAt': now.subtract(const Duration(days: 12)).toIso8601String(),
+      },
+      {
+        'id': 'review_5',
+        'userId': 'user_5',
+        'salonId': 'salon_4',
+        'serviceIds': ['service_9'],
+        'rating': 4.8,
+        'comment': 'Perfect party makeup! Got so many compliments. Thank you!',
+        'images': ['https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?q=80&w=500'],
+        'isVerified': true,
+        'helpfulCount': 18,
+        'createdAt': now.subtract(const Duration(days: 20)).toIso8601String(),
+        'updatedAt': now.subtract(const Duration(days: 20)).toIso8601String(),
+      },
+    ];
+  }
+
+  // Mock Categories Data
+  List<Map<String, dynamic>> _getMockCategories() {
+    return [
+      {
+        'id': 'cat_1',
+        'name': 'Hair Care',
+        'description': 'Complete hair care services including cutting, styling, coloring, and treatments',
+        'icon': 'hair_salon',
+        'image': 'https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=500',
+        'isActive': true,
+        'isPopular': true,
+        'sortOrder': 1,
+        'serviceCount': 4,
+        'createdAt': DateTime.now().subtract(const Duration(days: 365)).toIso8601String(),
+      },
+      {
+        'id': 'cat_2',
+        'name': 'Skin Care',
+        'description': 'Professional skin care treatments and facials for all skin types',
+        'icon': 'face',
+        'image': 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?q=80&w=500',
+        'isActive': true,
+        'isPopular': true,
+        'sortOrder': 2,
+        'serviceCount': 3,
+        'createdAt': DateTime.now().subtract(const Duration(days: 365)).toIso8601String(),
+      },
+      {
+        'id': 'cat_3',
+        'name': 'Makeup',
+        'description': 'Professional makeup services for all occasions',
+        'icon': 'palette',
+        'image': 'https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?q=80&w=500',
+        'isActive': true,
+        'isPopular': true,
+        'sortOrder': 3,
+        'serviceCount': 2,
+        'createdAt': DateTime.now().subtract(const Duration(days: 365)).toIso8601String(),
+      },
+      {
+        'id': 'cat_4',
+        'name': 'Nail Care',
+        'description': 'Complete nail care services including manicures, pedicures, and nail art',
+        'icon': 'nail_salon',
+        'image': 'https://images.unsplash.com/photo-1604654894610-df63bc536371?q=80&w=500',
+        'isActive': true,
+        'isPopular': false,
+        'sortOrder': 4,
+        'serviceCount': 2,
+        'createdAt': DateTime.now().subtract(const Duration(days: 365)).toIso8601String(),
+      },
+      {
+        'id': 'cat_5',
+        'name': 'Spa',
+        'description': 'Relaxing spa treatments and wellness services',
+        'icon': 'spa',
+        'image': 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?q=80&w=500',
+        'isActive': true,
+        'isPopular': true,
+        'sortOrder': 5,
+        'serviceCount': 1,
+        'createdAt': DateTime.now().subtract(const Duration(days: 365)).toIso8601String(),
+      },
+    ];
+  }
+
+  // Mock Promotions Data
+  List<Map<String, dynamic>> _getMockPromotions() {
+    final now = DateTime.now();
+    return [
+      {
+        'id': 'promo_1',
+        'title': 'First Time Customer Discount',
+        'description': 'Get 30% off on your first booking at any salon',
+        'code': 'FIRST30',
+        'discountType': 'percentage',
+        'discountValue': 30.0,
+        'minOrderAmount': 500.0,
+        'maxDiscountAmount': 1000.0,
+        'validFrom': now.subtract(const Duration(days: 30)).toIso8601String(),
+        'validUntil': now.add(const Duration(days: 60)).toIso8601String(),
+        'isActive': true,
+        'isGlobal': true,
+        'applicableCategories': ['Hair Care', 'Skin Care', 'Makeup', 'Nail Care', 'Spa'],
+        'applicableSalons': [],
+        'usageLimit': 100,
+        'usedCount': 45,
+        'image': 'https://images.unsplash.com/photo-1607344645866-009c7d0f2e8d?q=80&w=500',
+        'createdAt': now.subtract(const Duration(days: 30)).toIso8601String(),
+      },
+      {
+        'id': 'promo_2',
+        'title': 'Weekend Hair Special',
+        'description': '20% off on all hair services during weekends',
+        'code': 'WEEKEND20',
+        'discountType': 'percentage',
+        'discountValue': 20.0,
+        'minOrderAmount': 800.0,
+        'maxDiscountAmount': 500.0,
+        'validFrom': now.subtract(const Duration(days: 7)).toIso8601String(),
+        'validUntil': now.add(const Duration(days: 30)).toIso8601String(),
+        'isActive': true,
+        'isGlobal': false,
+        'applicableCategories': ['Hair Care'],
+        'applicableSalons': ['salon_1', 'salon_2'],
+        'usageLimit': 50,
+        'usedCount': 23,
+        'image': 'https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=500',
+        'createdAt': now.subtract(const Duration(days: 7)).toIso8601String(),
+      },
+      {
+        'id': 'promo_3',
+        'title': 'Spa Package Deal',
+        'description': 'Book any spa package and get a free facial',
+        'code': 'SPAFREE',
+        'discountType': 'fixed',
+        'discountValue': 1500.0,
+        'minOrderAmount': 5000.0,
+        'maxDiscountAmount': 1500.0,
+        'validFrom': now.subtract(const Duration(days: 15)).toIso8601String(),
+        'validUntil': now.add(const Duration(days: 45)).toIso8601String(),
+        'isActive': true,
+        'isGlobal': false,
+        'applicableCategories': ['Spa'],
+        'applicableSalons': ['salon_5'],
+        'usageLimit': 20,
+        'usedCount': 8,
+        'image': 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?q=80&w=500',
+        'createdAt': now.subtract(const Duration(days: 15)).toIso8601String(),
+      },
+      {
+        'id': 'promo_4',
+        'title': 'Bridal Package Discount',
+        'description': 'Special 25% discount on bridal makeup packages',
+        'code': 'BRIDAL25',
+        'discountType': 'percentage',
+        'discountValue': 25.0,
+        'minOrderAmount': 3000.0,
+        'maxDiscountAmount': 2000.0,
+        'validFrom': now.toIso8601String(),
+        'validUntil': now.add(const Duration(days: 90)).toIso8601String(),
+        'isActive': true,
+        'isGlobal': true,
+        'applicableCategories': ['Makeup'],
+        'applicableSalons': [],
+        'usageLimit': 30,
+        'usedCount': 12,
+        'image': 'https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?q=80&w=500',
+        'createdAt': now.toIso8601String(),
+      },
+      {
+        'id': 'promo_5',
+        'title': 'Refer & Earn',
+        'description': 'Refer a friend and both get ₹200 off on next booking',
+        'code': 'REFER200',
+        'discountType': 'fixed',
+        'discountValue': 200.0,
+        'minOrderAmount': 1000.0,
+        'maxDiscountAmount': 200.0,
+        'validFrom': now.subtract(const Duration(days: 60)).toIso8601String(),
+        'validUntil': now.add(const Duration(days: 180)).toIso8601String(),
+        'isActive': true,
+        'isGlobal': true,
+        'applicableCategories': ['Hair Care', 'Skin Care', 'Makeup', 'Nail Care', 'Spa'],
+        'applicableSalons': [],
+        'usageLimit': 1000,
+        'usedCount': 156,
+        'image': 'https://images.unsplash.com/photo-1559526324-593bc96d0f2b?q=80&w=500',
+        'createdAt': now.subtract(const Duration(days: 60)).toIso8601String(),
+      },
     ];
   }
 }

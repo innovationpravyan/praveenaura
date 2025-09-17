@@ -34,15 +34,22 @@ class SalonNotifier extends Notifier<SalonState> {
   @override
   SalonState build() {
     _databaseService = ref.read(databaseServiceProvider);
-    _loadSalons();
+
+    // Schedule loading for next frame to avoid circular dependency
+    ref.onCancel(() {
+      // Cleanup if needed
+    });
+
+    // Load data asynchronously
+    Future.microtask(() => _loadSalons());
+
     return const SalonState(isLoading: true);
   }
 
   Future<void> _loadSalons() async {
     try {
-      state = state.copyWith(isLoading: true, clearError: true);
       final salons = await _databaseService!.getAllSalons();
-      state = state.copyWith(salons: salons, isLoading: false);
+      state = state.copyWith(salons: salons, isLoading: false, clearError: true);
     } catch (e) {
       state = state.copyWith(
         error: 'Failed to load salons: ${e.toString()}',
