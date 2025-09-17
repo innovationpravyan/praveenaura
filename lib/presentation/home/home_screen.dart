@@ -8,6 +8,7 @@ import '../../core/extensions/context_extensions.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/salon_provider.dart';
 import '../../providers/service_provider.dart';
+import '../../providers/wishlist_provider.dart';
 import '../../widgets/base_screen.dart';
 import './widgets/gender_toggle_widget.dart';
 import './widgets/location_header_widget.dart';
@@ -36,7 +37,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   String _currentLocation = 'Varanasi, UP';
   final int _notificationCount = 3;
 
-  // Banner data
+  // Banner data (could be made dynamic in the future)
   final List<Map<String, dynamic>> _banners = [
     {
       "id": 1,
@@ -53,46 +54,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       "image":
       "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3",
       "discount": "20% OFF",
-    },
-  ];
-
-  final List<Map<String, dynamic>> _nearbySalons = [
-    {
-      "id": 1,
-      "name": "Glamour Studio",
-      "image":
-      "https://images.unsplash.com/photo-1560066984-138dadb4c035?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3",
-      "rating": 4.8,
-      "reviewCount": 245,
-      "distance": "0.5 km",
-      "startingPrice": "₹25",
-      "isOpen": true,
-      "isFavorite": false,
-      "discount": "15% OFF",
-    },
-    {
-      "id": 2,
-      "name": "Beauty Lounge",
-      "image":
-      "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3",
-      "rating": 4.6,
-      "reviewCount": 189,
-      "distance": "0.8 km",
-      "startingPrice": "₹30",
-      "isOpen": true,
-      "isFavorite": true,
-    },
-    {
-      "id": 3,
-      "name": "Elite Salon",
-      "image":
-      "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3",
-      "rating": 4.9,
-      "reviewCount": 312,
-      "distance": "1.2 km",
-      "startingPrice": "₹35",
-      "isOpen": false,
-      "isFavorite": false,
     },
   ];
 
@@ -271,15 +232,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 child: Consumer(
                   builder: (context, ref, child) {
                     final salonState = ref.watch(salonProvider);
+                    final wishlistState = ref.watch(wishlistProvider);
+
                     return NearYouSectionWidget(
                       salons: salonState.salons.take(6).map((salon) => {
                         'id': salon.id,
                         'name': salon.name,
                         'image': salon.images.isNotEmpty ? salon.images.first : '',
                         'rating': salon.rating,
-                        'distance': '2.5 km', // Mock distance
+                        'distance': '2.5 km', // Mock distance for now
                         'isOpen': salon.isOpen,
-                        'isFavorite': false, // This would come from wishlist provider
+                        'isFavorite': wishlistState.isSalonInWishlist(salon.id),
                       }).toList(),
                       onSalonTap: _onSalonTap,
                       onFavoriteToggle: _onFavoriteToggle,
@@ -516,21 +479,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     if (authState.requiresLogin) {
       _showAuthRequiredDialog(context);
     } else {
-      setState(() {
-        final index = _nearbySalons.indexWhere((s) => s['id'] == salon['id']);
-        if (index != -1) {
-          _nearbySalons[index]['isFavorite'] =
-          !(_nearbySalons[index]['isFavorite'] as bool);
+      final wishlistNotifier = ref.read(wishlistProvider.notifier);
+      final salonId = salon['id'] as String;
 
-          final isFavorite = _nearbySalons[index]['isFavorite'] as bool;
-          context.showSuccessSnackBar(
-            isFavorite
-                ? '${salon['name']} added to favorites'
-                : '${salon['name']} removed from favorites',
-          );
+      try {
+        wishlistNotifier.toggleSalonWishlist(salonId).then((_) {
+          if (mounted) {
+            final wishlistState = ref.read(wishlistProvider);
+            final isFavorite = wishlistState.isSalonInWishlist(salonId);
+
+            context.showSuccessSnackBar(
+              isFavorite
+                  ? '${salon['name']} added to favorites'
+                  : '${salon['name']} removed from favorites',
+            );
+            HapticFeedback.lightImpact();
+          }
+        });
+      } catch (e) {
+        if (mounted) {
+          context.showErrorSnackBar('Failed to update favorites');
         }
-      });
-      HapticFeedback.lightImpact();
+      }
     }
   }
 

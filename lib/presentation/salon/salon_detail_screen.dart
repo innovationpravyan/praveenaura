@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../models/salon_model.dart';
-import '../../models/service_model.dart';
+import '../../providers/salon_provider.dart';
+import '../../providers/service_provider.dart';
 import '../../widgets/base_screen.dart';
 
 class SalonDetailScreen extends ConsumerStatefulWidget {
@@ -37,7 +38,33 @@ class _SalonDetailScreenState extends ConsumerState<SalonDetailScreen>
 
   @override
   Widget build(BuildContext context) {
-    final salon = _getMockSalon();
+    final salonNotifier = ref.read(salonProvider.notifier);
+    final salon = salonNotifier.getSalonById(widget.salonId);
+
+    if (salon == null) {
+      return BaseScreen(
+        child: Scaffold(
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          appBar: AppBar(
+            title: const Text('Salon Details'),
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+          ),
+          body: const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.error_outline, size: 64, color: Colors.grey),
+                SizedBox(height: 16),
+                Text('Salon not found', style: TextStyle(fontSize: 18)),
+                SizedBox(height: 8),
+                Text('The salon you\'re looking for doesn\'t exist.'),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
 
     return BaseScreen(
       child: Scaffold(
@@ -289,7 +316,8 @@ class _SalonDetailScreenState extends ConsumerState<SalonDetailScreen>
   }
 
   Widget _buildServicesTab(SalonModel salon) {
-    final services = _getMockServices();
+    final serviceNotifier = ref.read(serviceProvider.notifier);
+    final services = serviceNotifier.getServicesBySalonId(salon.id);
 
     return ListView.builder(
       padding: const EdgeInsets.all(16),
@@ -376,6 +404,7 @@ class _SalonDetailScreenState extends ConsumerState<SalonDetailScreen>
   }
 
   Widget _buildReviewsTab(SalonModel salon) {
+    // TODO: Replace with reviews provider when implemented
     final reviews = _getMockReviews();
 
     return ListView.builder(
@@ -601,107 +630,6 @@ class _SalonDetailScreenState extends ConsumerState<SalonDetailScreen>
   }
 
   // Mock data methods
-  SalonModel _getMockSalon() {
-    return SalonModel(
-      id: widget.salonId,
-      name: 'Elegance Beauty Salon',
-      description: 'Premium beauty services for modern women',
-      address: '123 Mall Road',
-      city: 'Varanasi',
-      state: 'Uttar Pradesh',
-      pincode: '221001',
-      latitude: 25.3176,
-      longitude: 82.9739,
-      phoneNumber: '+91 9876543210',
-      email: 'info@elegancebeauty.com',
-      ownerId: 'owner1',
-      images: List.generate(3, (index) => 'image_$index'),
-      rating: 4.8,
-      totalReviews: 156,
-      isActive: true,
-      minPrice: 500.0,
-      maxPrice: 5000.0,
-      amenities: ['AC', 'WiFi', 'Parking', 'Card Payment'],
-      specializations: ['Bridal Makeup', 'Hair Styling', 'Skin Care'],
-      workingHours: {
-        'Monday': const WorkingHours(
-          day: 'Monday',
-          isOpen: true,
-          openTime: '09:00',
-          closeTime: '21:00',
-        ),
-        'Tuesday': const WorkingHours(
-          day: 'Tuesday',
-          isOpen: true,
-          openTime: '09:00',
-          closeTime: '21:00',
-        ),
-        'Wednesday': const WorkingHours(
-          day: 'Wednesday',
-          isOpen: true,
-          openTime: '09:00',
-          closeTime: '21:00',
-        ),
-        'Thursday': const WorkingHours(
-          day: 'Thursday',
-          isOpen: true,
-          openTime: '09:00',
-          closeTime: '21:00',
-        ),
-        'Friday': const WorkingHours(
-          day: 'Friday',
-          isOpen: true,
-          openTime: '09:00',
-          closeTime: '21:00',
-        ),
-        'Saturday': const WorkingHours(
-          day: 'Saturday',
-          isOpen: true,
-          openTime: '10:00',
-          closeTime: '22:00',
-        ),
-        'Sunday': const WorkingHours(
-          day: 'Sunday',
-          isOpen: false,
-        ),
-      },
-    );
-  }
-
-  List<ServiceModel> _getMockServices() {
-    return [
-      ServiceModel(
-        id: 'service1',
-        name: 'Hair Cut & Style',
-        description: 'Professional hair cutting and styling',
-        price: 800.0,
-        duration: 45,
-        category: 'Hair',
-        salonId: widget.salonId,
-        isActive: true,
-      ),
-      ServiceModel(
-        id: 'service2',
-        name: 'Facial Treatment',
-        description: 'Deep cleansing facial with natural ingredients',
-        price: 1200.0,
-        duration: 60,
-        category: 'Skin Care',
-        salonId: widget.salonId,
-        isActive: true,
-      ),
-      ServiceModel(
-        id: 'service3',
-        name: 'Bridal Makeup',
-        description: 'Complete bridal makeover package',
-        price: 5000.0,
-        duration: 180,
-        category: 'Makeup',
-        salonId: widget.salonId,
-        isActive: true,
-      ),
-    ];
-  }
 
   List<Map<String, dynamic>> _getMockReviews() {
     return [

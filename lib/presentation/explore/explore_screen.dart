@@ -7,6 +7,8 @@ import '../../models/salon_model.dart';
 import '../../models/service_model.dart';
 import '../../providers/salon_provider.dart';
 import '../../providers/service_provider.dart';
+import '../../providers/category_provider.dart';
+import '../../providers/popular_searches_provider.dart';
 import '../../widgets/base_screen.dart';
 
 class ExploreScreen extends ConsumerStatefulWidget {
@@ -24,30 +26,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   bool _isSearching = false;
   List<ServiceModel> _searchResults = [];
   List<SalonModel> _salonResults = [];
-
-  final List<String> _categories = [
-    'All',
-    'Hair Cut',
-    'Hair Color',
-    'Facial',
-    'Manicure',
-    'Pedicure',
-    'Massage',
-    'Makeup',
-    'Eyebrow',
-    'Waxing',
-  ];
-
-  final List<String> _popularSearches = [
-    'Hair cut for women',
-    'Bridal makeup',
-    'Facial treatment',
-    'Hair coloring',
-    'Manicure pedicure',
-    'Deep tissue massage',
-    'Eyebrow threading',
-    'Hair spa',
-  ];
 
   @override
   void initState() {
@@ -194,24 +172,26 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   }
 
   Widget _buildSearchFilters() {
+    final categories = ref.watch(categoriesListProvider);
+
     return Container(
       height: 50,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        itemCount: _categories.length,
+        itemCount: categories.length,
         itemBuilder: (context, index) {
-          final category = _categories[index];
-          final isSelected = category == _selectedCategory;
+          final category = categories[index];
+          final isSelected = category.name == _selectedCategory;
 
           return Padding(
             padding: const EdgeInsets.only(right: 12),
             child: FilterChip(
-              label: Text(category),
+              label: Text(category.name),
               selected: isSelected,
               onSelected: (selected) {
                 setState(() {
-                  _selectedCategory = selected ? category : 'All';
+                  _selectedCategory = selected ? category.name : 'All';
                 });
               },
               selectedColor: Theme.of(
@@ -280,10 +260,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   }
 
   Widget _buildPopularSearches() {
+    final popularSearches = ref.watch(popularSearchesProvider);
+
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: _popularSearches.map((search) {
+      children: popularSearches.map((search) {
         return ActionChip(
           label: Text(search),
           onPressed: () => _performSearch(search),
@@ -294,7 +276,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   }
 
   Widget _buildCategoryGrid() {
-    final displayCategories = _categories.where((c) => c != 'All').toList();
+    final categories = ref.watch(categoriesListProvider);
+    final displayCategories = categories.where((c) => c.name != 'All').toList();
 
     return GridView.builder(
       shrinkWrap: true,
@@ -312,9 +295,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         return InkWell(
           onTap: () {
             setState(() {
-              _selectedCategory = category;
-              _searchQuery = category.toLowerCase();
-              _searchController.text = category;
+              _selectedCategory = category.name;
+              _searchQuery = category.name.toLowerCase();
+              _searchController.text = category.name;
             });
           },
           borderRadius: BorderRadius.circular(8),
@@ -328,7 +311,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             ),
             child: Center(
               child: Text(
-                category,
+                category.name,
                 style: Theme.of(
                   context,
                 ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),

@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'config/app_router.dart';
+import 'core/services/database_service.dart';
 import 'core/theme/app_theme.dart';
 import 'firebase_options.dart';
 import 'providers/auth_provider.dart';
@@ -14,6 +15,18 @@ void main() async {
 
   // Firebase Initialization
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // Initialize database with sample data if needed
+  try {
+    final databaseService = DatabaseService.instance;
+    // The getAllSalons() method will automatically seed data if collections are empty
+    await databaseService.getAllSalons();
+    await databaseService.getAllServices();
+    debugPrint('Database initialization completed');
+  } catch (e) {
+    debugPrint('Database initialization failed: $e');
+    // Continue app startup even if seeding fails
+  }
 
   // System UI styling
   SystemChrome.setSystemUIOverlayStyle(
