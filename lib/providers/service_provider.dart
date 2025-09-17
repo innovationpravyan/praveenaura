@@ -1,3 +1,4 @@
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/services/database_service.dart';
@@ -40,8 +41,10 @@ class ServiceNotifier extends Notifier<ServiceState> {
       // Cleanup if needed
     });
 
-    // Load data asynchronously
-    Future.microtask(() => _loadServices());
+    // Load data asynchronously using post frame callback
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _loadServices();
+    });
 
     return const ServiceState(isLoading: true);
   }
@@ -49,11 +52,15 @@ class ServiceNotifier extends Notifier<ServiceState> {
   Future<void> _loadServices() async {
     try {
       final services = await _databaseService!.getAllServices();
-      state = state.copyWith(services: services, isLoading: false, clearError: true);
-    } catch (e) {
-      state = state.copyWith(
-        error: 'Failed to load services: ${e.toString()}',
+      state = ServiceState(
+        services: services,
         isLoading: false,
+      );
+    } catch (e) {
+      state = ServiceState(
+        services: const [],
+        isLoading: false,
+        error: 'Failed to load services: ${e.toString()}',
       );
     }
   }

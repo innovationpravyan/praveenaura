@@ -268,15 +268,71 @@ class DatabaseService {
 
   // Wishlist operations
   Future<Map<String, List<String>>> getUserWishlist(String userId) async {
-    return {'salons': [], 'services': []};
+    try {
+      final doc = await _firestore.collection('wishlists').doc(userId).get();
+      if (doc.exists) {
+        final data = doc.data() as Map<String, dynamic>;
+        return {
+          'salons': List<String>.from(data['salons'] ?? []),
+          'services': List<String>.from(data['services'] ?? []),
+        };
+      }
+      return {'salons': [], 'services': []};
+    } catch (e) {
+      developer.log('Error getting user wishlist: $e');
+      return {'salons': [], 'services': []};
+    }
   }
 
   Future<void> addToWishlist(String userId, String itemId, String type) async {
-    // Mock implementation
+    try {
+      final wishlistRef = _firestore.collection('wishlists').doc(userId);
+      final doc = await wishlistRef.get();
+
+      Map<String, dynamic> data;
+      if (doc.exists) {
+        data = doc.data() as Map<String, dynamic>;
+      } else {
+        data = {'salons': [], 'services': []};
+      }
+
+      List<String> items = List<String>.from(data[type == 'salon' ? 'salons' : 'services'] ?? []);
+      if (!items.contains(itemId)) {
+        items.add(itemId);
+        data[type == 'salon' ? 'salons' : 'services'] = items;
+        data['updatedAt'] = DateTime.now().toIso8601String();
+
+        await wishlistRef.set(data);
+        developer.log('Added $itemId to $type wishlist for user $userId');
+      }
+    } catch (e) {
+      developer.log('Error adding to wishlist: $e');
+      rethrow;
+    }
   }
 
   Future<void> removeFromWishlist(String userId, String itemId, String type) async {
-    // Mock implementation
+    try {
+      final wishlistRef = _firestore.collection('wishlists').doc(userId);
+      final doc = await wishlistRef.get();
+
+      if (doc.exists) {
+        final data = doc.data() as Map<String, dynamic>;
+        List<String> items = List<String>.from(data[type == 'salon' ? 'salons' : 'services'] ?? []);
+
+        if (items.contains(itemId)) {
+          items.remove(itemId);
+          data[type == 'salon' ? 'salons' : 'services'] = items;
+          data['updatedAt'] = DateTime.now().toIso8601String();
+
+          await wishlistRef.set(data);
+          developer.log('Removed $itemId from $type wishlist for user $userId');
+        }
+      }
+    } catch (e) {
+      developer.log('Error removing from wishlist: $e');
+      rethrow;
+    }
   }
 
   // Helper method to convert Firestore document to SalonModel

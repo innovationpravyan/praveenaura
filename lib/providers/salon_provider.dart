@@ -1,3 +1,4 @@
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/services/database_service.dart';
@@ -40,8 +41,10 @@ class SalonNotifier extends Notifier<SalonState> {
       // Cleanup if needed
     });
 
-    // Load data asynchronously
-    Future.microtask(() => _loadSalons());
+    // Load data asynchronously using post frame callback
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _loadSalons();
+    });
 
     return const SalonState(isLoading: true);
   }
@@ -49,11 +52,15 @@ class SalonNotifier extends Notifier<SalonState> {
   Future<void> _loadSalons() async {
     try {
       final salons = await _databaseService!.getAllSalons();
-      state = state.copyWith(salons: salons, isLoading: false, clearError: true);
-    } catch (e) {
-      state = state.copyWith(
-        error: 'Failed to load salons: ${e.toString()}',
+      state = SalonState(
+        salons: salons,
         isLoading: false,
+      );
+    } catch (e) {
+      state = SalonState(
+        salons: const [],
+        isLoading: false,
+        error: 'Failed to load salons: ${e.toString()}',
       );
     }
   }

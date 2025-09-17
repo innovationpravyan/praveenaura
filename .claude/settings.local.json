@@ -6,7 +6,8 @@
       "Bash(flutter clean:*)",
       "Bash(flutter build:*)",
       "Bash(timeout 60 flutter build apk --debug)",
-      "Bash(flutter run:*)"
+      "Bash(flutter run:*)",
+      "Bash(nc:*)"
     ],
     "deny": [],
     "ask": []

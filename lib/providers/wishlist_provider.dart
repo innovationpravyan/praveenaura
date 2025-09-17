@@ -1,3 +1,4 @@
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -50,7 +51,17 @@ class WishlistNotifier extends Notifier<WishlistState> {
   @override
   WishlistState build() {
     _databaseService = ref.read(databaseServiceProvider);
-    _loadWishlist();
+
+    // Schedule loading for next frame to avoid circular dependency
+    ref.onCancel(() {
+      // Cleanup if needed
+    });
+
+    // Load data asynchronously using post frame callback
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _loadWishlist();
+    });
+
     return const WishlistState();
   }
 
@@ -59,9 +70,9 @@ class WishlistNotifier extends Notifier<WishlistState> {
     final authState = ref.read(authProvider);
     if (authState.user == null && !authState.isGuest) return;
 
-    state = state.copyWith(isLoading: true, clearError: true);
-
     try {
+      state = state.copyWith(isLoading: true, clearError: true);
+
       List<String> salonIds = [];
       List<String> serviceIds = [];
 
@@ -89,6 +100,7 @@ class WishlistNotifier extends Notifier<WishlistState> {
         salonIds: salonIds,
         serviceIds: serviceIds,
         isLoading: false,
+        clearError: true,
       );
     } catch (e) {
       state = state.copyWith(
