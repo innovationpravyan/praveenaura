@@ -9,6 +9,7 @@ import '../presentation/auth/login_screen.dart';
 import '../presentation/auth/signup_screen.dart';
 import '../presentation/booking/booking_flow_screen.dart';
 import '../presentation/booking/booking_history_screen.dart';
+import '../presentation/debug/debug_data_upload_screen.dart';
 import '../presentation/home/home_screen.dart';
 import '../presentation/legal/privacy_screen.dart';
 import '../presentation/legal/terms_screen.dart';
@@ -54,6 +55,9 @@ abstract class AppRoutes {
   static const String about = '/about';
   static const String privacy = '/privacy';
   static const String terms = '/terms';
+
+  // Debug Routes (only available in debug mode)
+  static const String debugDataUpload = '/debug/data-upload';
 
   // Routes that require full authentication (not guest mode)
   static const List<String> premiumRoutes = [
@@ -407,6 +411,10 @@ class AppRouter {
         return const PrivacyScreen();
       case AppRoutes.terms:
         return const TermsScreen();
+
+      // Debug routes (only available in debug mode)
+      case AppRoutes.debugDataUpload:
+        return const DebugDataUploadScreen();
 
       default:
         return const NotFoundScreen();

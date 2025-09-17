@@ -34,15 +34,22 @@ class ServiceNotifier extends Notifier<ServiceState> {
   @override
   ServiceState build() {
     _databaseService = ref.read(databaseServiceProvider);
-    _loadServices();
+
+    // Schedule loading for next frame to avoid circular dependency
+    ref.onCancel(() {
+      // Cleanup if needed
+    });
+
+    // Load data asynchronously
+    Future.microtask(() => _loadServices());
+
     return const ServiceState(isLoading: true);
   }
 
   Future<void> _loadServices() async {
     try {
-      state = state.copyWith(isLoading: true, clearError: true);
       final services = await _databaseService!.getAllServices();
-      state = state.copyWith(services: services, isLoading: false);
+      state = state.copyWith(services: services, isLoading: false, clearError: true);
     } catch (e) {
       state = state.copyWith(
         error: 'Failed to load services: ${e.toString()}',
