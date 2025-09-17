@@ -65,6 +65,7 @@ dependencies:
   intl: ^0.20.2
   url_launcher: ^6.3.2
   google_places_autocomplete_text_field: ^2.0.3
+  fluttertoast: ^8.2.12
 dev_dependencies:
   flutter_test:
     sdk: flutter

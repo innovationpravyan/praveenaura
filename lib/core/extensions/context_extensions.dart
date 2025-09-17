@@ -48,6 +48,30 @@ extension BuildContextExtensions on BuildContext {
     await navigator.pushNamedAndRemoveUntil(AppRoutes.home, (route) => false);
   }
 
+  // Payment & Booking Navigation
+  Future<void> navigateToPaymentCheckout({
+    Map<String, dynamic>? bookingData,
+  }) async {
+    await navigator.pushNamed(
+      AppRoutes.paymentCheckout,
+      arguments: {'bookingData': bookingData},
+    );
+  }
+
+  Future<void> navigateToBookingFlow({
+    String? salonId,
+    String? serviceId,
+  }) async {
+    await navigator.pushNamed(
+      AppRoutes.bookingFlow,
+      arguments: {'salonId': salonId, 'serviceId': serviceId},
+    );
+  }
+
+  Future<void> navigateToSalonDetail(String salonId) async {
+    await navigator.pushNamed(AppRoutes.salonDetail, arguments: salonId);
+  }
+
   // Other Navigation
   Future<void> navigateToEditProfile() async {
     await navigator.pushNamed(AppRoutes.editProfile);

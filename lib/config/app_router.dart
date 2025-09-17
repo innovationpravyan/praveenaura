@@ -10,15 +10,16 @@ import '../presentation/auth/signup_screen.dart';
 import '../presentation/booking/booking_flow_screen.dart';
 import '../presentation/booking/booking_history_screen.dart';
 import '../presentation/debug/debug_data_upload_screen.dart';
+import '../presentation/explore/explore_screen.dart';
 import '../presentation/home/home_screen.dart';
 import '../presentation/legal/privacy_screen.dart';
 import '../presentation/legal/terms_screen.dart';
 import '../presentation/notifications/notifications_screen.dart';
 import '../presentation/onboarding/onboarding_screen.dart';
+import '../presentation/payment_and_checkout/payment_and_checkout.dart';
 import '../presentation/profile/edit_profile_screen.dart';
 import '../presentation/profile/profile_screen.dart';
 import '../presentation/salon/salon_detail_screen.dart';
-import '../presentation/explore/explore_screen.dart';
 import '../presentation/settings/settings_screen.dart';
 import '../presentation/splash/splash_screen.dart';
 import '../presentation/support/support_screen.dart';
@@ -45,6 +46,7 @@ abstract class AppRoutes {
   static const String salonDetail = '/salon-detail';
   static const String bookingFlow = '/booking-flow';
   static const String bookingHistory = '/booking-history';
+  static const String paymentCheckout = '/payment-checkout';
   static const String editProfile = '/edit-profile';
   static const String wishlist = '/wishlist';
   static const String notifications = '/notifications';
@@ -64,6 +66,7 @@ abstract class AppRoutes {
     bookingFlow,
     bookings,
     bookingHistory,
+    paymentCheckout,
     profile,
     editProfile,
     wishlist,
@@ -393,6 +396,11 @@ class AppRouter {
           salonId: args['salonId'],
           serviceId: args['serviceId'],
         );
+      case AppRoutes.paymentCheckout:
+        final args = (settings.arguments as Map<String, dynamic>?) ?? {};
+        return PaymentAndCheckout(
+          bookingData: args['bookingData'] as Map<String, dynamic>?,
+        );
       case AppRoutes.editProfile:
         return const EditProfileScreen();
       case AppRoutes.wishlist:
@@ -440,6 +448,7 @@ class AppRouter {
       // Modal-like screens - slide from bottom
       case AppRoutes.bookingFlow:
       case AppRoutes.bookingHistory:
+      case AppRoutes.paymentCheckout:
       case AppRoutes.editProfile:
       case AppRoutes.settings:
         return RouteTransition.slideFromBottom;
@@ -458,6 +467,7 @@ class AppRouter {
 
       case AppRoutes.bookingFlow:
       case AppRoutes.bookingHistory:
+      case AppRoutes.paymentCheckout:
       case AppRoutes.editProfile:
         return const Duration(milliseconds: 400);
 
