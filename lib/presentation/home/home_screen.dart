@@ -3,9 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/extensions/context_extensions.dart';
 import '../../config/app_router.dart';
+import '../../core/extensions/context_extensions.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/salon_provider.dart';
+import '../../providers/service_provider.dart';
+import '../../providers/notification_provider.dart';
 import '../../widgets/base_screen.dart';
 import './widgets/gender_toggle_widget.dart';
 import './widgets/location_header_widget.dart';
@@ -34,7 +37,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   String _currentLocation = 'Varanasi, UP';
   final int _notificationCount = 3;
 
-  // Mock data using your exact structure
+  // Banner data
   final List<Map<String, dynamic>> _banners = [
     {
       "id": 1,
@@ -276,9 +279,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 ),
                 child: FadeTransition(
                   opacity: _fadeAnimation,
-                  child: PopularServicesWidget(
-                    services: _popularServices,
-                    onServiceTap: _onServiceTap,
+                  child: Consumer(
+                    builder: (context, ref, child) {
+                      final popularServices = ref.watch(popularServicesProvider);
+                      return PopularServicesWidget(
+                        services: popularServices.take(8).map((service) => {
+                          'id': service.id,
+                          'name': service.name,
+                          'image': service.primaryImage,
+                          'price': service.formattedPrice,
+                          'originalPrice': service.originalPrice != null ? '₹${service.originalPrice!.toInt()}' : null,
+                          'rating': service.rating,
+                          'duration': service.formattedDuration,
+                          'isPopular': service.isPopular,
+                        }).toList(),
+                        onServiceTap: _onServiceTap,
+                      );
+                    },
                   ),
                 ),
               ),
@@ -288,12 +305,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             SliverToBoxAdapter(
               child: FadeTransition(
                 opacity: _fadeAnimation,
-                child: NearYouSectionWidget(
-                  salons: _nearbySalons,
-                  onSalonTap: _onSalonTap,
-                  onFavoriteToggle: _onFavoriteToggle,
-                  onShare: _onShare,
-                  onGetDirections: _onGetDirections,
+                child: Consumer(
+                  builder: (context, ref, child) {
+                    final salonState = ref.watch(salonProvider);
+                    return NearYouSectionWidget(
+                      salons: salonState.salons.take(6).map((salon) => {
+                        'id': salon.id,
+                        'name': salon.name,
+                        'image': salon.images.isNotEmpty ? salon.images.first : '',
+                        'rating': salon.rating,
+                        'distance': '2.5 km', // Mock distance
+                        'isOpen': salon.isOpen,
+                        'isFavorite': false, // This would come from wishlist provider
+                      }).toList(),
+                      onSalonTap: _onSalonTap,
+                      onFavoriteToggle: _onFavoriteToggle,
+                      onShare: _onShare,
+                      onGetDirections: _onGetDirections,
+                    );
+                  },
                 ),
               ),
             ),

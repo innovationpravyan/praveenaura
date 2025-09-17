@@ -2,6 +2,108 @@ import 'package:equatable/equatable.dart';
 
 import '../core/constants/app_constants.dart';
 
+// Booking Status Enum
+enum BookingStatus {
+  pending,
+  confirmed,
+  inProgress,
+  completed,
+  cancelled,
+}
+
+extension BookingStatusExtension on BookingStatus {
+  String get value {
+    switch (this) {
+      case BookingStatus.pending:
+        return AppConstants.pending;
+      case BookingStatus.confirmed:
+        return AppConstants.confirmed;
+      case BookingStatus.inProgress:
+        return AppConstants.inProgress;
+      case BookingStatus.completed:
+        return AppConstants.completed;
+      case BookingStatus.cancelled:
+        return AppConstants.cancelled;
+    }
+  }
+
+  String get displayText {
+    switch (this) {
+      case BookingStatus.pending:
+        return 'Pending Confirmation';
+      case BookingStatus.confirmed:
+        return 'Confirmed';
+      case BookingStatus.inProgress:
+        return 'In Progress';
+      case BookingStatus.completed:
+        return 'Completed';
+      case BookingStatus.cancelled:
+        return 'Cancelled';
+    }
+  }
+
+  static BookingStatus fromString(String value) {
+    switch (value) {
+      case AppConstants.pending:
+        return BookingStatus.pending;
+      case AppConstants.confirmed:
+        return BookingStatus.confirmed;
+      case AppConstants.inProgress:
+        return BookingStatus.inProgress;
+      case AppConstants.completed:
+        return BookingStatus.completed;
+      case AppConstants.cancelled:
+        return BookingStatus.cancelled;
+      default:
+        return BookingStatus.pending;
+    }
+  }
+}
+
+// Payment Status Enum
+enum PaymentStatus {
+  pending,
+  success,
+  failed,
+}
+
+extension PaymentStatusExtension on PaymentStatus {
+  String get value {
+    switch (this) {
+      case PaymentStatus.pending:
+        return AppConstants.paymentPending;
+      case PaymentStatus.success:
+        return AppConstants.paymentSuccess;
+      case PaymentStatus.failed:
+        return AppConstants.paymentFailed;
+    }
+  }
+
+  String get displayText {
+    switch (this) {
+      case PaymentStatus.pending:
+        return 'Payment Pending';
+      case PaymentStatus.success:
+        return 'Payment Successful';
+      case PaymentStatus.failed:
+        return 'Payment Failed';
+    }
+  }
+
+  static PaymentStatus fromString(String value) {
+    switch (value) {
+      case AppConstants.paymentPending:
+        return PaymentStatus.pending;
+      case AppConstants.paymentSuccess:
+        return PaymentStatus.success;
+      case AppConstants.paymentFailed:
+        return PaymentStatus.failed;
+      default:
+        return PaymentStatus.pending;
+    }
+  }
+}
+
 class BookingModel extends Equatable {
   const BookingModel({
     required this.id,

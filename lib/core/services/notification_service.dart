@@ -110,6 +110,17 @@ class NotificationService {
     }
   }
 
+  // Public method to request permissions
+  Future<bool> requestPermissions() async {
+    try {
+      final settings = await _requestPermissions();
+      return settings.authorizationStatus == AuthorizationStatus.authorized;
+    } catch (e) {
+      developer.log('Error requesting permissions: $e');
+      return false;
+    }
+  }
+
   // Request notification permissions
   Future<NotificationSettings> _requestPermissions() async {
     try {

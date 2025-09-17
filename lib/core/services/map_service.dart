@@ -5,6 +5,7 @@ import 'package:flutter/services.dart' as flutter_services;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../constants/app_constants.dart';
 import '../exceptions/app_exceptions.dart';
@@ -284,8 +285,14 @@ class MapsService {
 
       developer.log('Opening location in maps: $url');
 
-      // In a real app, you would use url_launcher package
-      // await launchUrl(Uri.parse(url));
+      if (await canLaunchUrl(Uri.parse(url))) {
+        await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+      } else {
+        throw flutter_services.PlatformException(
+          code: 'URL_LAUNCHER_ERROR',
+          message: 'Could not launch maps application',
+        );
+      }
     } catch (e) {
       developer.log('Error opening maps: $e');
       throw flutter_services.PlatformException(
@@ -314,8 +321,14 @@ class MapsService {
 
       developer.log('Opening directions: $url');
 
-      // In a real app, you would use url_launcher package
-      // await launchUrl(Uri.parse(url));
+      if (await canLaunchUrl(Uri.parse(url))) {
+        await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+      } else {
+        throw flutter_services.PlatformException(
+          code: 'URL_LAUNCHER_ERROR',
+          message: 'Could not launch directions application',
+        );
+      }
     } catch (e) {
       developer.log('Error opening directions: $e');
       throw flutter_services.PlatformException(

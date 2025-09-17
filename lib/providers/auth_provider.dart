@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/exceptions/app_exceptions.dart';
+import '../core/services/database_service.dart';
 import '../core/services/firebase_service.dart';
 import '../models/user_model.dart';
 
@@ -61,11 +62,13 @@ class AuthState {
 // Auth Notifier with improved state management
 class AuthNotifier extends Notifier<AuthState> {
   FirebaseService? _firebaseService;
+  DatabaseService? _databaseService;
   StreamSubscription<User?>? _authSubscription;
 
   @override
   AuthState build() {
     _firebaseService = ref.read(firebaseServiceProvider);
+    _databaseService = ref.read(databaseServiceProvider);
     _init();
 
     ref.onDispose(() {
@@ -84,7 +87,7 @@ class AuthNotifier extends Notifier<AuthState> {
       try {
         if (user != null) {
           // User is signed in
-          final userModel = await _firebaseService!.getUserData(user.uid);
+          final userModel = await _databaseService!.getUserById(user.uid);
           if (userModel != null) {
             state = state.copyWith(
               user: userModel,
@@ -237,7 +240,7 @@ class AuthNotifier extends Notifier<AuthState> {
           updatedAt: DateTime.now(),
         );
 
-        await _firebaseService!.createUserDocument(userModel);
+        await _databaseService!.createUser(userModel);
 
         print('AuthNotifier: Sign up successful, signing out user');
 
@@ -365,7 +368,7 @@ class AuthNotifier extends Notifier<AuthState> {
           updatedAt: DateTime.now(),
         );
 
-        await _firebaseService!.updateUserDocument(updatedUser);
+        await _databaseService!.updateUser(updatedUser);
 
         state = state.copyWith(isLoading: false, user: updatedUser);
       } catch (e) {

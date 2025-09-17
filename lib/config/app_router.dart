@@ -7,6 +7,7 @@ import '../presentation/about/about_screen.dart';
 import '../presentation/auth/forgot_password_screen.dart';
 import '../presentation/auth/login_screen.dart';
 import '../presentation/auth/signup_screen.dart';
+import '../presentation/booking/booking_flow_screen.dart';
 import '../presentation/booking/booking_history_screen.dart';
 import '../presentation/home/home_screen.dart';
 import '../presentation/legal/privacy_screen.dart';
@@ -15,6 +16,8 @@ import '../presentation/notifications/notifications_screen.dart';
 import '../presentation/onboarding/onboarding_screen.dart';
 import '../presentation/profile/edit_profile_screen.dart';
 import '../presentation/profile/profile_screen.dart';
+import '../presentation/salon/salon_detail_screen.dart';
+import '../presentation/search/search_screen.dart';
 import '../presentation/settings/settings_screen.dart';
 import '../presentation/splash/splash_screen.dart';
 import '../presentation/support/support_screen.dart';
@@ -339,7 +342,7 @@ class AppRouter {
     String routeName,
     RouteSettings settings,
   ) {
-    final screen = _getScreenForRoute(routeName);
+    final screen = _getScreenForRoute(routeName, settings);
     final transition = _getTransitionForRoute(routeName);
 
     return AppPageRoute(
@@ -351,7 +354,7 @@ class AppRouter {
   }
 
   // Get screen widget for route
-  static Widget _getScreenForRoute(String routeName) {
+  static Widget _getScreenForRoute(String routeName, RouteSettings settings) {
     switch (routeName) {
       // Initial & Auth Routes
       case AppRoutes.initial:
@@ -369,14 +372,23 @@ class AppRouter {
       // Main App Routes
       case AppRoutes.home:
         return const HomeScreen();
-      // case AppRoutes.explore:
-      //   return const ExploreScreen();
+      case AppRoutes.search:
+        return const SearchScreen();
       case AppRoutes.bookingHistory:
         return const BookingHistoryScreen();
       case AppRoutes.profile:
         return const ProfileScreen();
 
       // Feature Routes
+      case AppRoutes.salonDetail:
+        final salonId = (settings.arguments as String?) ?? '';
+        return SalonDetailScreen(salonId: salonId);
+      case AppRoutes.bookingFlow:
+        final args = (settings.arguments as Map<String, dynamic>?) ?? {};
+        return BookingFlowScreen(
+          salonId: args['salonId'],
+          serviceId: args['serviceId'],
+        );
       case AppRoutes.editProfile:
         return const EditProfileScreen();
       case AppRoutes.wishlist:

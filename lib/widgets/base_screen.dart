@@ -262,8 +262,8 @@ class _BaseScreenState extends State<BaseScreen> with WidgetsBindingObserver {
         ],
       ),
       child: SafeArea(
-        child: SizedBox(
-          height: context.responsiveBottomNavigationHeight,
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 4.0),
           child: BottomNavigationBar(
             type: BottomNavigationBarType.fixed,
             currentIndex: _currentIndex,

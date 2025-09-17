@@ -277,4 +277,39 @@ class SalonModel extends Equatable {
   bool get hasCertifications => certifications.isNotEmpty;
 
   bool get hasAwards => awards.isNotEmpty;
+
+  // Check if salon is currently open based on working hours
+  bool get isOpen {
+    if (!isActive) return false;
+
+    final now = DateTime.now();
+    final currentDay = _getDayName(now.weekday);
+
+    if (!workingHours.containsKey(currentDay)) return false;
+
+    final todayHours = workingHours[currentDay];
+    if (todayHours == null || !todayHours.isOpen) return false;
+
+    // If no specific times are set, assume open
+    if (todayHours.openTime == null || todayHours.closeTime == null) return true;
+
+    final currentTime = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+
+    // Simple time comparison (assumes 24-hour format)
+    return currentTime.compareTo(todayHours.openTime!) >= 0 &&
+           currentTime.compareTo(todayHours.closeTime!) <= 0;
+  }
+
+  String _getDayName(int weekday) {
+    switch (weekday) {
+      case 1: return 'Monday';
+      case 2: return 'Tuesday';
+      case 3: return 'Wednesday';
+      case 4: return 'Thursday';
+      case 5: return 'Friday';
+      case 6: return 'Saturday';
+      case 7: return 'Sunday';
+      default: return 'Monday';
+    }
+  }
 }
