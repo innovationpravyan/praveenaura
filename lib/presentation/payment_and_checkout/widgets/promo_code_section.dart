@@ -35,7 +35,7 @@ class _PromoCodeSectionState extends State<PromoCodeSection>
       "code": "SAVE10",
       "discount": 10.0,
       "type": "fixed",
-      "description": "\$10 off any service",
+      "description": "₹10 off any service",
     },
     {
       "code": "BEAUTY15",

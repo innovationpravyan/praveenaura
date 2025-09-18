@@ -51,7 +51,7 @@ class _PromotionalBannerWidgetState extends State<PromotionalBannerWidget> {
     }
 
     return SizedBox(
-      height: context.responsiveSize(20),
+      height: context.responsiveSize(40),
       child: Column(
         children: [
           Expanded(
@@ -113,11 +113,11 @@ class _PromotionalBannerWidgetState extends State<PromotionalBannerWidget> {
                         Container(
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
+                              begin: Alignment.centerRight,
+                              end: Alignment.centerLeft,
                               colors: [
                                 Colors.transparent,
-                                Colors.black.withOpacity(0.6),
+                                Colors.deepPurple,
                               ],
                             ),
                           ),

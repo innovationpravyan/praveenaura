@@ -2,6 +2,8 @@ import 'package:aurame/core/extensions/context_extensions.dart';
 import 'package:aurame/core/extensions/date_extensions.dart';
 import 'package:flutter/material.dart';
 
+import '../../../models/salon_model.dart';
+
 class BookingSummaryWidget extends StatelessWidget {
   final Map<String, dynamic>? selectedService;
   final Map<String, dynamic>? selectedProfessional;
@@ -9,6 +11,7 @@ class BookingSummaryWidget extends StatelessWidget {
   final String? selectedTime;
   final String? bookingType;
   final String? address;
+  final SalonModel? selectedSalon;
   final VoidCallback onConfirmBooking;
 
   const BookingSummaryWidget({
@@ -19,6 +22,7 @@ class BookingSummaryWidget extends StatelessWidget {
     this.selectedTime,
     this.bookingType,
     this.address,
+    this.selectedSalon,
     required this.onConfirmBooking,
   });
 
@@ -27,7 +31,7 @@ class BookingSummaryWidget extends StatelessWidget {
     final travelFee = bookingType == 'home' ? 15.0 : 0.0;
     final servicePrice = selectedService != null
         ? double.tryParse(
-                selectedService!["price"].toString().replaceAll('\$', ''),
+                selectedService!["price"].toString().replaceAll('₹', '').replaceAll(',', ''),
               ) ??
               0.0
         : 0.0;
@@ -87,38 +91,38 @@ class BookingSummaryWidget extends StatelessWidget {
 
                   SizedBox(height: context.responsiveSmallSpacing),
 
-                  // Professional Details
-                  _buildSummaryCard(
-                    context: context,
-                    title: 'Professional',
-                    icon: Icons.person,
-                    children: [
-                      if (selectedProfessional != null) ...[
-                        _buildDetailRow(
-                          context,
-                          'Professional',
-                          selectedProfessional!["name"],
-                        ),
-                        if (selectedProfessional!["rating"] != null)
-                          _buildDetailRow(
-                            context,
-                            'Rating',
-                            '${selectedProfessional!["rating"]} ⭐',
-                          ),
-                        if (selectedProfessional!["experience"] != null)
-                          _buildDetailRow(
-                            context,
-                            'Experience',
-                            selectedProfessional!["experience"],
-                          ),
-                      ] else
-                        _buildDetailRow(
-                          context,
-                          'Professional',
-                          'Not selected',
-                        ),
-                    ],
-                  ),
+                  // Professional Details (COMMENTED OUT - No longer required)
+                  // _buildSummaryCard(
+                  //   context: context,
+                  //   title: 'Professional',
+                  //   icon: Icons.person,
+                  //   children: [
+                  //     if (selectedProfessional != null) ...[
+                  //       _buildDetailRow(
+                  //         context,
+                  //         'Professional',
+                  //         selectedProfessional!["name"],
+                  //       ),
+                  //       if (selectedProfessional!["rating"] != null)
+                  //         _buildDetailRow(
+                  //           context,
+                  //           'Rating',
+                  //           '${selectedProfessional!["rating"]} ⭐',
+                  //         ),
+                  //       if (selectedProfessional!["experience"] != null)
+                  //         _buildDetailRow(
+                  //           context,
+                  //           'Experience',
+                  //           selectedProfessional!["experience"],
+                  //         ),
+                  //     ] else
+                  //       _buildDetailRow(
+                  //         context,
+                  //         'Professional',
+                  //         'Not selected',
+                  //       ),
+                  //   ],
+                  // ),
 
                   SizedBox(height: context.responsiveSmallSpacing),
 
@@ -158,11 +162,28 @@ class BookingSummaryWidget extends StatelessWidget {
                       ),
                       if (bookingType == 'home' && address != null)
                         _buildDetailRow(context, 'Address', address!)
-                      else if (bookingType == 'salon')
+                      else if (bookingType == 'salon' && selectedSalon != null) ...[
+                        _buildDetailRow(
+                          context,
+                          'Salon',
+                          selectedSalon!.displayName,
+                        ),
                         _buildDetailRow(
                           context,
                           'Address',
-                          'Aura Beauty Salon\n123 Beauty Street, Downtown\nNew York, NY 10001',
+                          selectedSalon!.fullAddress,
+                        ),
+                        if (selectedSalon!.phoneNumber.isNotEmpty)
+                          _buildDetailRow(
+                            context,
+                            'Phone',
+                            selectedSalon!.phoneNumber,
+                          ),
+                      ] else if (bookingType == 'salon')
+                        _buildDetailRow(
+                          context,
+                          'Salon',
+                          'Not selected',
                         ),
                     ],
                   ),
@@ -178,19 +199,19 @@ class BookingSummaryWidget extends StatelessWidget {
                       _buildDetailRow(
                         context,
                         'Service Fee',
-                        '\$${servicePrice.toStringAsFixed(2)}',
+                        '₹${servicePrice.toStringAsFixed(0)}',
                       ),
                       if (travelFee > 0)
                         _buildDetailRow(
                           context,
                           'Travel Fee',
-                          '\$${travelFee.toStringAsFixed(2)}',
+                          '₹${travelFee.toStringAsFixed(0)}',
                         ),
                       Divider(color: context.dividerColor, thickness: 1),
                       _buildDetailRow(
                         context,
                         'Total',
-                        '\$${totalPrice.toStringAsFixed(2)}',
+                        '₹${totalPrice.toStringAsFixed(0)}',
                         isTotal: true,
                       ),
                     ],
@@ -386,10 +407,9 @@ class BookingSummaryWidget extends StatelessWidget {
 
   bool _isBookingComplete() {
     return selectedService != null &&
-        selectedProfessional != null &&
         selectedDate != null &&
         selectedTime != null &&
         bookingType != null &&
-        (bookingType != 'home' || address != null);
+        (bookingType == 'home' ? address != null : selectedSalon != null);
   }
 }

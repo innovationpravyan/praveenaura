@@ -72,7 +72,7 @@ class NearYouSectionWidget extends StatelessWidget {
               desktop: 4,
               smallMobile: 1,
             ),
-            childAspectRatio: 0.75,
+            // childAspectRatio: 1, // Wider & shorter cards
             crossAxisSpacing: context.responsiveSize(2),
             mainAxisSpacing: context.responsiveSize(2),
           ),

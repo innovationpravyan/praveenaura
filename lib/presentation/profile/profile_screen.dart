@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/extensions/context_extensions.dart';
 import '../../core/theme/app_colors.dart';
+import '../../models/booking_model.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/booking_provider.dart';
+import '../../providers/wishlist_provider.dart';
 import '../../widgets/base_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -251,7 +254,7 @@ class ProfileScreen extends ConsumerWidget {
           SizedBox(height: context.responsiveSpacing),
 
           // Stats row
-          _buildStatsRow(context, user),
+          _buildStatsRow(context, user, ref),
 
           SizedBox(height: context.responsiveSpacing),
 
@@ -425,39 +428,61 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatsRow(BuildContext context, user) {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildStatCard(
-            context,
-            'Bookings',
-            '12',
-            Icons.calendar_month_outlined,
+  Widget _buildStatsRow(BuildContext context, user, WidgetRef ref) {
+    return Consumer(
+      builder: (context, ref, child) {
+        final bookingState = ref.watch(bookingProvider);
+        final wishlistState = ref.watch(wishlistProvider);
+
+        // Calculate user stats from real data
+        final userBookings = bookingState.bookings
+            .where((booking) => booking.userId == user.uid)
+            .toList();
+
+        final completedBookings = userBookings
+            .where((booking) => booking.status == BookingStatus.completed.value)
+            .length;
+
+        final totalSpent = userBookings
+            .where((booking) => booking.status == BookingStatus.completed.value)
+            .fold(0.0, (sum, booking) => sum + booking.totalAmount);
+
+        final totalWishlistItems = wishlistState.totalItems;
+
+        return Row(
+          children: [
+            Expanded(
+              child: _buildStatCard(
+                context,
+                'Bookings',
+                completedBookings.toString(),
+                Icons.calendar_month_outlined,
                 () => context.navigateToBookingHistory(),
-          ),
-        ),
-        SizedBox(width: context.responsiveSmallSpacing),
-        Expanded(
-          child: _buildStatCard(
-            context,
-            'Spent',
-            '₹2,500',
-            Icons.attach_money,
-            null,
-          ),
-        ),
-        SizedBox(width: context.responsiveSmallSpacing),
-        Expanded(
-          child: _buildStatCard(
-            context,
-            'Points',
-            '850',
-            Icons.stars_outlined,
-            null,
-          ),
-        ),
-      ],
+              ),
+            ),
+            SizedBox(width: context.responsiveSmallSpacing),
+            Expanded(
+              child: _buildStatCard(
+                context,
+                'Spent',
+                '₹${totalSpent.toInt()}',
+                Icons.attach_money,
+                null,
+              ),
+            ),
+            SizedBox(width: context.responsiveSmallSpacing),
+            Expanded(
+              child: _buildStatCard(
+                context,
+                'Favorites',
+                totalWishlistItems.toString(),
+                Icons.favorite_outlined,
+                null,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 

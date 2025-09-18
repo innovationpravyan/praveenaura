@@ -1,3 +1,4 @@
+import 'package:aurame/presentation/payment_and_checkout/payment_and_checkout_simple.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,7 +17,6 @@ import '../presentation/legal/privacy_screen.dart';
 import '../presentation/legal/terms_screen.dart';
 import '../presentation/notifications/notifications_screen.dart';
 import '../presentation/onboarding/onboarding_screen.dart';
-import '../presentation/payment_and_checkout/payment_and_checkout.dart';
 import '../presentation/profile/edit_profile_screen.dart';
 import '../presentation/profile/profile_screen.dart';
 import '../presentation/salon/salon_detail_screen.dart';
@@ -398,7 +398,7 @@ class AppRouter {
         );
       case AppRoutes.paymentCheckout:
         final args = (settings.arguments as Map<String, dynamic>?) ?? {};
-        return PaymentAndCheckout(
+        return PaymentAndCheckoutSimple(
           bookingData: args['bookingData'] as Map<String, dynamic>?,
         );
       case AppRoutes.editProfile:

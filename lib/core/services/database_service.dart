@@ -174,30 +174,96 @@ class DatabaseService {
 
   // Booking operations
   Future<BookingModel> createBooking(BookingModel booking) async {
-    final bookingWithId = booking.copyWith(
-      id: 'booking_${DateTime.now().millisecondsSinceEpoch}',
-    );
-    // In real implementation, save to Firestore
-    return bookingWithId;
+    try {
+      // Generate a unique ID if not provided
+      final bookingId = booking.id.isEmpty
+          ? 'booking_${DateTime.now().millisecondsSinceEpoch}'
+          : booking.id;
+
+      final bookingWithId = booking.copyWith(
+        id: bookingId,
+        createdAt: booking.createdAt ?? DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
+      // Save to Firestore
+      await _bookingsCollection.doc(bookingId).set(_bookingToFirestore(bookingWithId));
+      developer.log('Booking created successfully: $bookingId');
+
+      return bookingWithId;
+    } catch (e) {
+      developer.log('Error creating booking: $e');
+      rethrow;
+    }
   }
 
   Future<List<BookingModel>> getUserBookings(String userId) async {
-    // Return mock data for now
-    return [];
+    try {
+      final snapshot = await _bookingsCollection
+          .where('userId', isEqualTo: userId)
+          .orderBy('createdAt', descending: true)
+          .get();
+
+      if (snapshot.docs.isEmpty) {
+        developer.log('No bookings found for user $userId, returning mock data for demo');
+        // Return mock bookings for demo purposes with current user ID
+        return _getMockBookingsForUser(userId);
+      }
+
+      return snapshot.docs.map((doc) => _bookingFromFirestore(doc)).toList();
+    } catch (e) {
+      developer.log('Error getting user bookings: $e');
+      // Fallback to mock data for demo
+      developer.log('Falling back to mock data for user $userId');
+      return _getMockBookingsForUser(userId);
+    }
   }
 
   Future<BookingModel?> getBookingById(String bookingId) async {
-    // Mock implementation
-    return null;
+    try {
+      final doc = await _bookingsCollection.doc(bookingId).get();
+      if (doc.exists) {
+        return _bookingFromFirestore(doc);
+      }
+      return null;
+    } catch (e) {
+      developer.log('Error getting booking by ID: $e');
+      // Fallback to mock data
+      final mockBookings = _getMockBookings();
+      try {
+        return mockBookings.firstWhere((booking) => booking.id == bookingId);
+      } catch (e) {
+        return null;
+      }
+    }
   }
 
   Future<void> updateBooking(BookingModel booking) async {
-    // Mock implementation
+    try {
+      await _bookingsCollection.doc(booking.id).update(_bookingToFirestore(booking));
+      developer.log('Booking updated successfully: ${booking.id}');
+    } catch (e) {
+      developer.log('Error updating booking: $e');
+      rethrow;
+    }
   }
 
   Future<List<BookingModel>> getSalonBookingsForDate(String salonId, DateTime date) async {
-    // Mock implementation
-    return [];
+    try {
+      final startOfDay = DateTime(date.year, date.month, date.day);
+      final endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59);
+
+      final snapshot = await _bookingsCollection
+          .where('salonId', isEqualTo: salonId)
+          .where('bookingDateTime', isGreaterThanOrEqualTo: startOfDay.toIso8601String())
+          .where('bookingDateTime', isLessThanOrEqualTo: endOfDay.toIso8601String())
+          .get();
+
+      return snapshot.docs.map((doc) => _bookingFromFirestore(doc)).toList();
+    } catch (e) {
+      developer.log('Error getting salon bookings for date: $e');
+      return [];
+    }
   }
 
   // Notification operations
@@ -584,6 +650,32 @@ class DatabaseService {
       'createdAt': booking.createdAt?.toIso8601String(),
       'updatedAt': booking.updatedAt?.toIso8601String(),
     };
+  }
+
+  // Helper method to convert Firestore document to BookingModel
+  BookingModel _bookingFromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+
+    return BookingModel(
+      id: doc.id,
+      userId: data['userId'] ?? '',
+      salonId: data['salonId'] ?? '',
+      serviceIds: List<String>.from(data['serviceIds'] ?? []),
+      bookingDateTime: _parseDateTime(data['bookingDateTime']) ?? DateTime.now(),
+      serviceType: data['serviceType'] ?? 'salon',
+      totalAmount: (data['totalAmount'] ?? 0.0).toDouble(),
+      estimatedDuration: data['estimatedDuration'] ?? 60,
+      status: data['status'] ?? 'pending',
+      paymentStatus: data['paymentStatus'] ?? 'pending',
+      paymentId: data['paymentId'],
+      paymentMethod: data['paymentMethod'],
+      specialRequests: data['specialRequests'],
+      address: data['address'],
+      cancellationReason: data['cancellationReason'],
+      cancelledAt: _parseDateTime(data['cancelledAt']),
+      createdAt: _parseDateTime(data['createdAt']),
+      updatedAt: _parseDateTime(data['updatedAt']),
+    );
   }
 
   // Helper method to convert Firestore document to ServiceModel
@@ -1106,6 +1198,99 @@ class DatabaseService {
         createdAt: DateTime.now().subtract(const Duration(days: 90)),
         updatedAt: DateTime.now(),
         lastLoginAt: DateTime.now().subtract(const Duration(minutes: 30)),
+      ),
+    ];
+  }
+
+  // Mock Bookings Data for specific user
+  List<BookingModel> _getMockBookingsForUser(String userId) {
+    final now = DateTime.now();
+    return [
+      BookingModel(
+        id: 'booking_${userId}_1',
+        userId: userId,
+        salonId: 'salon_1',
+        serviceIds: ['service_1', 'service_2'],
+        bookingDateTime: now.add(const Duration(days: 2, hours: 10)),
+        serviceType: 'salon',
+        totalAmount: 2000.0,
+        estimatedDuration: 150,
+        status: 'confirmed',
+        paymentStatus: 'paid',
+        paymentId: 'pay_abc123',
+        paymentMethod: 'upi',
+        specialRequests: 'Please use organic products',
+        createdAt: now.subtract(const Duration(days: 1)),
+        updatedAt: now.subtract(const Duration(days: 1)),
+      ),
+      BookingModel(
+        id: 'booking_${userId}_2',
+        userId: userId,
+        salonId: 'salon_2',
+        serviceIds: ['service_4'],
+        bookingDateTime: now.add(const Duration(days: 5, hours: 14)),
+        serviceType: 'salon',
+        totalAmount: 2500.0,
+        estimatedDuration: 120,
+        status: 'confirmed',
+        paymentStatus: 'paid',
+        paymentId: 'pay_xyz456',
+        paymentMethod: 'card',
+        specialRequests: 'First time customer',
+        createdAt: now.subtract(const Duration(hours: 6)),
+        updatedAt: now.subtract(const Duration(hours: 6)),
+      ),
+      BookingModel(
+        id: 'booking_${userId}_3',
+        userId: userId,
+        salonId: 'salon_3',
+        serviceIds: ['service_7'],
+        bookingDateTime: now.subtract(const Duration(days: 10)),
+        serviceType: 'salon',
+        totalAmount: 2000.0,
+        estimatedDuration: 120,
+        status: 'completed',
+        paymentStatus: 'paid',
+        paymentId: 'pay_xyz789',
+        paymentMethod: 'card',
+        createdAt: now.subtract(const Duration(days: 12)),
+        updatedAt: now.subtract(const Duration(days: 10)),
+      ),
+      BookingModel(
+        id: 'booking_${userId}_4',
+        userId: userId,
+        salonId: 'salon_4',
+        serviceIds: ['service_9'],
+        bookingDateTime: now.subtract(const Duration(days: 3)),
+        serviceType: 'home',
+        totalAmount: 2500.0,
+        estimatedDuration: 90,
+        status: 'completed',
+        paymentStatus: 'paid',
+        paymentId: 'pay_def456',
+        paymentMethod: 'wallet',
+        address: '123 Home Street, City',
+        specialRequests: 'Party makeup',
+        createdAt: now.subtract(const Duration(days: 5)),
+        updatedAt: now.subtract(const Duration(days: 3)),
+      ),
+      BookingModel(
+        id: 'booking_${userId}_5',
+        userId: userId,
+        salonId: 'salon_1',
+        serviceIds: ['service_3'],
+        bookingDateTime: now.subtract(const Duration(days: 30)),
+        serviceType: 'salon',
+        totalAmount: 5000.0,
+        estimatedDuration: 180,
+        status: 'cancelled',
+        paymentStatus: 'refunded',
+        paymentId: 'pay_cancelled123',
+        paymentMethod: 'upi',
+        cancellationReason: 'Personal emergency',
+        cancelledAt: now.subtract(const Duration(days: 31)),
+        createdAt: now.subtract(const Duration(days: 35)),
+        updatedAt: now.subtract(const Duration(days: 30)),
       ),
     ];
   }

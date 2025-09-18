@@ -1,4 +1,4 @@
-// Updated HomeScreen with proper booking navigation
+// Updated HomeScreen with Service Type Buttons after promotional banner
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,6 +17,8 @@ import './widgets/popular_services_widget.dart';
 import './widgets/promotional_banner_widget.dart';
 import './widgets/quick_booking_fab_widget.dart';
 import './widgets/search_bar_widget.dart';
+import './widgets/service_type_buttons_widget.dart'; // Add this import
+import './widgets/our_services_widget.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -32,6 +34,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   late AnimationController _slideController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
+  late ScrollController _scrollController;
+  final GlobalKey _nearYouSectionKey = GlobalKey();
 
   bool _isMaleSelected = false;
   String _currentLocation = 'Varanasi, UP';
@@ -44,7 +48,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       "title": "New Year Special Offer",
       "subtitle": "Get 30% off on all services",
       "image":
-      "https://images.unsplash.com/photo-1560066984-138dadb4c035?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3",
+          "https://images.unsplash.com/photo-1560066984-138dadb4c035?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3",
       "discount": "30% OFF",
     },
     {
@@ -52,7 +56,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       "title": "Premium Hair Treatment",
       "subtitle": "Transform your look today",
       "image":
-      "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3",
+          "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3",
       "discount": "20% OFF",
     },
   ];
@@ -61,6 +65,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   void initState() {
     super.initState();
     _searchController = TextEditingController();
+    _scrollController = ScrollController();
 
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 800),
@@ -102,6 +107,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   @override
   void dispose() {
     _searchController.dispose();
+    _scrollController.dispose();
     _fadeController.dispose();
     _slideController.dispose();
     super.dispose();
@@ -125,6 +131,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         color: context.primaryColor,
         backgroundColor: context.surfaceColor,
         child: CustomScrollView(
+          controller: _scrollController,
           physics: const BouncingScrollPhysics(),
           slivers: [
             // Status bar spacing
@@ -159,9 +166,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             // Search bar
             SliverToBoxAdapter(
               child: Padding(
-                padding: EdgeInsets.symmetric(
-                  vertical: context.responsiveSpacing,
-                ),
+                padding: EdgeInsets.only(bottom: context.responsiveSpacing),
                 child: FadeTransition(
                   opacity: _fadeAnimation,
                   child: SearchBarWidget(
@@ -195,6 +200,37 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               ),
             ),
 
+            // Our Services Section
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  vertical: context.responsiveSpacing,
+                ),
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: OurServicesWidget(
+                    onServiceTap: _onServiceTap,
+                  ),
+                ),
+              ),
+            ),
+
+            // Service Type Buttons (Visit Salon & Home Service)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  vertical: context.responsiveSpacing,
+                ),
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: ServiceTypeButtonsWidget(
+                    onSalonServiceTap: () => _onServiceTypeTap('salon'),
+                    onHomeServiceTap: () => _onServiceTypeTap('home'),
+                  ),
+                ),
+              ),
+            ),
+
             // Popular services
             SliverToBoxAdapter(
               child: Padding(
@@ -205,18 +241,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   opacity: _fadeAnimation,
                   child: Consumer(
                     builder: (context, ref, child) {
-                      final popularServices = ref.watch(popularServicesProvider);
+                      final popularServices = ref.watch(
+                        popularServicesProvider,
+                      );
                       return PopularServicesWidget(
-                        services: popularServices.take(8).map((service) => {
-                          'id': service.id,
-                          'name': service.name,
-                          'image': service.primaryImage,
-                          'price': service.formattedPrice,
-                          'originalPrice': service.originalPrice != null ? '₹${service.originalPrice!.toInt()}' : null,
-                          'rating': service.rating,
-                          'duration': service.formattedDuration,
-                          'isPopular': service.isPopular,
-                        }).toList(),
+                        services: popularServices
+                            .take(8)
+                            .map(
+                              (service) => {
+                                'id': service.id,
+                                'name': service.name,
+                                'image': service.primaryImage,
+                                'price': service.formattedPrice,
+                                'originalPrice': service.originalPrice != null
+                                    ? '₹${service.originalPrice!.toInt()}'
+                                    : null,
+                                'rating': service.rating,
+                                'duration': service.formattedDuration,
+                                'isPopular': service.isPopular,
+                              },
+                            )
+                            .toList(),
                         onServiceTap: _onServiceTap,
                       );
                     },
@@ -227,6 +272,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
             // Near you section
             SliverToBoxAdapter(
+              key: _nearYouSectionKey,
               child: FadeTransition(
                 opacity: _fadeAnimation,
                 child: Consumer(
@@ -235,15 +281,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     final wishlistState = ref.watch(wishlistProvider);
 
                     return NearYouSectionWidget(
-                      salons: salonState.salons.take(6).map((salon) => {
-                        'id': salon.id,
-                        'name': salon.name,
-                        'image': salon.images.isNotEmpty ? salon.images.first : '',
-                        'rating': salon.rating,
-                        'distance': '2.5 km', // Mock distance for now
-                        'isOpen': salon.isOpen,
-                        'isFavorite': wishlistState.isSalonInWishlist(salon.id),
-                      }).toList(),
+                      salons: salonState.salons
+                          .take(6)
+                          .map(
+                            (salon) => {
+                              'id': salon.id,
+                              'name': salon.name,
+                              'image': salon.images.isNotEmpty
+                                  ? salon.images.first
+                                  : '',
+                              'rating': salon.rating,
+                              'distance': '2.5 km', // Mock distance for now
+                              'isOpen': salon.isOpen,
+                              'isFavorite': wishlistState.isSalonInWishlist(
+                                salon.id,
+                              ),
+                            },
+                          )
+                          .toList(),
                       onSalonTap: _onSalonTap,
                       onFavoriteToggle: _onFavoriteToggle,
                       onShare: _onShare,
@@ -268,20 +323,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     return Container(
       padding: context.responsiveContentPadding,
       child: context.responsiveLayout(
-        mobile: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildWelcomeText(context, authState),
-            SizedBox(height: context.responsiveSpacing),
-            Align(
-              alignment: Alignment.centerRight,
-              child: GenderToggleWidget(
-                isMaleSelected: _isMaleSelected,
-                onGenderChanged: _onGenderChanged,
-              ),
-            ),
-          ],
-        ),
+        mobile: _buildWelcomeText(context, authState),
         tablet: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -314,30 +356,54 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          '${_getGreeting()},',
-          style: context.bodyLarge.copyWith(
-            color: context.textMediumEmphasisColor,
-            fontSize: context.responsive<double>(
-              mobile: 16,
-              tablet: 18,
-              desktop: 20,
-              smallMobile: 14,
+        // Row(
+        //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        //   children: [
+        //     Text(
+        //       '${_getGreeting()},',
+        //       style: context.bodyLarge.copyWith(
+        //         color: context.textMediumEmphasisColor,
+        //         fontSize: context.responsive<double>(
+        //           mobile: 16,
+        //           tablet: 18,
+        //           desktop: 20,
+        //           smallMobile: 14,
+        //         ),
+        //       ),
+        //     ),
+        //     Align(
+        //       alignment: Alignment.centerRight,
+        //       child: GenderToggleWidget(
+        //         isMaleSelected: _isMaleSelected,
+        //         onGenderChanged: _onGenderChanged,
+        //       ),
+        //     ),
+        //   ],
+        // ),
+        // SizedBox(height: context.responsiveSmallSpacing),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              authState.user?.displayName ?? (authState.isGuest ? 'Guest' : 'User'),
+              style: context.headlineMedium.copyWith(
+                fontWeight: FontWeight.w700,
+                fontSize: context.responsive<double>(
+                  mobile: 24,
+                  tablet: 28,
+                  desktop: 32,
+                  smallMobile: 20,
+                ),
+              ),
             ),
-          ),
-        ),
-        SizedBox(height: context.responsiveSmallSpacing),
-        Text(
-          authState.user?.displayName ?? (authState.isGuest ? 'Guest' : 'User'),
-          style: context.headlineMedium.copyWith(
-            fontWeight: FontWeight.w700,
-            fontSize: context.responsive<double>(
-              mobile: 24,
-              tablet: 28,
-              desktop: 32,
-              smallMobile: 20,
+            Align(
+              alignment: Alignment.centerRight,
+              child: GenderToggleWidget(
+                isMaleSelected: _isMaleSelected,
+                onGenderChanged: _onGenderChanged,
+              ),
             ),
-          ),
+          ],
         ),
         SizedBox(height: context.responsiveSmallSpacing),
         Text(
@@ -432,9 +498,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       HapticFeedback.lightImpact();
 
       // Show theme change feedback
-      context.showInfoSnackBar(
-        'Theme updated to ${isMale ? 'Male' : 'Female'} style',
-      );
+      // context.showInfoSnackBar(
+      //   'Theme updated to ${isMale ? 'Male' : 'Female'} style',
+      // );
     }
   }
 
@@ -451,13 +517,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     Navigator.of(context).pushNamed(AppRoutes.explore);
   }
 
-  void _onServiceTap(Map<String, dynamic> service) {
+  void _onServiceTap(dynamic service) {
     final authState = ref.read(authProvider);
     if (authState.requiresLogin) {
       _showAuthRequiredDialog(context);
     } else {
-      // Navigate directly to booking flow with pre-selected service
-      _navigateToBookingFlow(serviceId: service['id'].toString());
+      if (service is Map<String, dynamic>) {
+        // Navigate directly to booking flow with pre-selected service
+        _navigateToBookingFlow(serviceId: service['id'].toString());
+      } else if (service is String) {
+        // Navigate to booking flow with service type
+        _navigateToBookingFlow(serviceType: service);
+      }
     }
   }
 
@@ -467,10 +538,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       _showAuthRequiredDialog(context);
     } else {
       // Navigate to salon detail screen
-      Navigator.of(context).pushNamed(
-        AppRoutes.salonDetail,
-        arguments: salon['id'].toString(),
-      );
+      Navigator.of(
+        context,
+      ).pushNamed(AppRoutes.salonDetail, arguments: salon['id'].toString());
     }
   }
 
@@ -514,6 +584,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     HapticFeedback.lightImpact();
   }
 
+  // NEW: Service type button handler
+  void _onServiceTypeTap(String serviceType) {
+    final authState = ref.read(authProvider);
+
+    if (authState.requiresLogin) {
+      _showAuthRequiredDialog(context);
+      return;
+    }
+
+    HapticFeedback.mediumImpact();
+
+    switch (serviceType) {
+      case 'salon':
+        // Scroll to Near You section instead of navigating away
+        _scrollToNearYouSection();
+        break;
+      case 'home':
+        // Navigate to home services or booking flow
+        _navigateToBookingFlow(serviceType: 'home');
+        break;
+      default:
+        context.showErrorSnackBar('Unknown service type: $serviceType');
+    }
+  }
+
   // Main booking action handler - This is the key update
   void _handleBookingAction(BuildContext context, AuthState authState) {
     if (authState.requiresLogin) {
@@ -524,8 +619,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     }
   }
 
-  // Navigate to booking flow with optional parameters
-  void _navigateToBookingFlow({String? salonId, String? serviceId}) {
+  // Navigate to booking flow with optional parameters - Updated with serviceType
+  void _navigateToBookingFlow({
+    String? salonId,
+    String? serviceId,
+    String? serviceType,
+  }) {
     final Map<String, dynamic> arguments = {};
 
     if (salonId != null) {
@@ -534,6 +633,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
     if (serviceId != null) {
       arguments['serviceId'] = serviceId;
+    }
+
+    if (serviceType != null) {
+      arguments['serviceType'] = serviceType;
     }
 
     // Add haptic feedback for better UX
@@ -569,11 +672,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     return 'Good Evening';
   }
 
+  // Scroll to Near You section
+  void _scrollToNearYouSection() {
+    final context = _nearYouSectionKey.currentContext;
+    if (context != null) {
+      Scrollable.ensureVisible(
+        context,
+        duration: const Duration(milliseconds: 800),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
   void _handlePremiumFeature(
-      BuildContext context,
-      AuthState authState,
-      String feature,
-      ) {
+    BuildContext context,
+    AuthState authState,
+    String feature,
+  ) {
     if (authState.requiresLogin) {
       _showAuthRequiredDialog(context);
     } else {
@@ -590,18 +705,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   void _showAuthRequiredDialog(BuildContext context) {
     context
         .showConfirmDialog(
-      title: 'Login Required',
-      message:
-      'This feature requires a full account. Would you like to login or create an account?',
-      confirmText: 'Login',
-      cancelText: 'Cancel',
-      confirmColor: context.primaryColor,
-    )
+          title: 'Login Required',
+          message:
+              'This feature requires a full account. Would you like to login or create an account?',
+          confirmText: 'Login',
+          cancelText: 'Cancel',
+          confirmColor: context.primaryColor,
+        )
         .then((confirmed) {
-      if (confirmed == true && mounted) {
-        Navigator.of(context).pushReplacementNamed(AppRoutes.login);
-      }
-    });
+          if (confirmed == true && mounted) {
+            Navigator.of(context).pushReplacementNamed(AppRoutes.login);
+          }
+        });
   }
 
   void _showLocationBottomSheet() {
@@ -634,7 +749,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               context,
               'Use Current Location',
               Icons.my_location,
-                  () {
+              () {
                 Navigator.pop(context);
                 setState(() {
                   _currentLocation = 'Varanasi, UP';
@@ -650,7 +765,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               context,
               'Delhi, India',
               Icons.location_city,
-                  () {
+              () {
                 Navigator.pop(context);
                 setState(() {
                   _currentLocation = 'Delhi, India';
@@ -663,7 +778,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               context,
               'Mumbai, India',
               Icons.location_city,
-                  () {
+              () {
                 Navigator.pop(context);
                 setState(() {
                   _currentLocation = 'Mumbai, India';
@@ -680,12 +795,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   }
 
   Widget _buildLocationOption(
-      BuildContext context,
-      String title,
-      IconData icon,
-      VoidCallback onTap, {
-        bool isPrimary = false,
-      }) {
+    BuildContext context,
+    String title,
+    IconData icon,
+    VoidCallback onTap, {
+    bool isPrimary = false,
+  }) {
     return Container(
       margin: EdgeInsets.symmetric(
         vertical: context.responsiveSmallSpacing / 2,

@@ -17,14 +17,14 @@ class GenderToggleWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final toggleWidth = context.responsive<double>(
-      mobile: 120,
+      mobile: 110,
       tablet: 140,
       desktop: 160,
       smallMobile: 100,
     );
 
     final toggleHeight = context.responsive<double>(
-      mobile: 36,
+      mobile: 30,
       tablet: 40,
       desktop: 44,
       smallMobile: 32,

@@ -50,7 +50,7 @@ class PaymentBreakdownCard extends StatelessWidget {
             paymentData["taxes"] as String,
             false,
           ),
-          if ((paymentData["discount"] as String) != "\$0.00")
+          if ((paymentData["discount"] as String) != "₹0.00")
             _buildBreakdownRow(
               context,
               'Discount',
@@ -58,7 +58,7 @@ class PaymentBreakdownCard extends StatelessWidget {
               false,
               isDiscount: true,
             ),
-          if ((paymentData["tip"] as String) != "\$0.00")
+          if ((paymentData["tip"] as String) != "₹0.00")
             _buildBreakdownRow(
               context,
               'Tip',

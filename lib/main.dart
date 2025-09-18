@@ -79,8 +79,8 @@ class AuraBeautyApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       title: 'Aura Beauty',
       theme: lightTheme,
-      darkTheme: darkTheme,
-      themeMode: ThemeMode.system,
+      darkTheme: lightTheme,
+      themeMode: ThemeMode.light,
       // Use route-based navigation instead of fixed home
       initialRoute: AppRoutes.initial,
       onGenerateRoute: AppRouter.onGenerateRoute,

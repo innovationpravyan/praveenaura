@@ -55,7 +55,7 @@ class PopularServicesWidget extends StatelessWidget {
 
         SizedBox(
           height: context.responsive<double>(
-            mobile: 180,
+            mobile: 200,
             tablet: 200,
             desktop: 220,
             smallMobile: 160,
@@ -66,7 +66,10 @@ class PopularServicesWidget extends StatelessWidget {
             itemCount: services.length,
             itemBuilder: (context, index) {
               final service = services[index];
-              return _buildServiceCard(context, service);
+              return Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: _buildServiceCard(context, service),
+              );
             },
           ),
         ),

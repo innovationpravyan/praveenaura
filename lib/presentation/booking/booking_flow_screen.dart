@@ -1,7 +1,13 @@
 import 'package:aurame/core/extensions/context_extensions.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../config/app_router.dart';
+import '../../models/salon_model.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/booking_provider.dart';
+import '../../providers/salon_provider.dart';
+import '../../providers/service_provider.dart';
 import '../../widgets/base_screen.dart';
 import './widgets/booking_summary_widget.dart';
 import './widgets/booking_type_widget.dart';
@@ -9,17 +15,17 @@ import './widgets/date_time_selection_widget.dart';
 import './widgets/professional_selection_widget.dart';
 import './widgets/service_selection_widget.dart';
 
-class BookingFlowScreen extends StatefulWidget {
+class BookingFlowScreen extends ConsumerStatefulWidget {
   final String? salonId;
   final String? serviceId;
 
   const BookingFlowScreen({super.key, this.salonId, this.serviceId});
 
   @override
-  State<BookingFlowScreen> createState() => _BookingFlowScreenState();
+  ConsumerState<BookingFlowScreen> createState() => _BookingFlowScreenState();
 }
 
-class _BookingFlowScreenState extends State<BookingFlowScreen>
+class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen>
     with TickerProviderStateMixin {
   int currentStep = 0;
   late PageController _pageController;
@@ -33,10 +39,11 @@ class _BookingFlowScreenState extends State<BookingFlowScreen>
   String? selectedTime;
   String? bookingType = 'salon';
   String? selectedAddress;
+  SalonModel? selectedSalon;
 
   final List<String> stepTitles = [
     'Select Service',
-    'Choose Professional',
+    // 'Choose Professional',
     'Pick Date & Time',
     'Booking Details',
     'Review & Confirm',
@@ -101,26 +108,50 @@ class _BookingFlowScreenState extends State<BookingFlowScreen>
     switch (currentStep) {
       case 0:
         return selectedService != null;
+      // case 1:
+      //   return selectedProfessional != null;
       case 1:
-        return selectedProfessional != null;
-      case 2:
         return selectedDate != null && selectedTime != null;
-      case 3:
+      case 2:
         return bookingType != null &&
-            (bookingType != 'home' || selectedAddress != null);
-      case 4:
+            (bookingType == 'home' ? selectedAddress != null : selectedSalon != null);
+      case 3:
         return true;
       default:
         return false;
     }
   }
 
-  void _confirmBooking() {
+  Future<void> _confirmBooking() async {
+    final authState = ref.read(authProvider);
+
+    // Check authentication
+    if (authState.user == null) {
+      context.showErrorSnackBar('Please login to make a booking');
+      return;
+    }
+
     // Show loading dialog
     context.showLoadingDialog(message: 'Confirming your booking...');
 
-    // Simulate booking process
-    Future.delayed(const Duration(seconds: 2), () {
+    try {
+      final bookingNotifier = ref.read(bookingProvider.notifier);
+
+      // Create booking in Firebase
+      final booking = await bookingNotifier.createBooking(
+        salonId: selectedSalon?.id ?? selectedService?['salonId'] ?? widget.salonId ?? '',
+        serviceIds: [selectedService?['id'] ?? widget.serviceId ?? ''],
+        bookingDateTime: DateTime(
+          selectedDate!.year,
+          selectedDate!.month,
+          selectedDate!.day,
+          _parseHour(selectedTime!),
+          _parseMinute(selectedTime!),
+        ),
+        serviceType: bookingType == 'home' ? 'home' : 'salon',
+        address: bookingType == 'home' ? selectedAddress : null,
+      );
+
       if (!mounted) return;
       context.hideLoadingDialog();
 
@@ -156,7 +187,7 @@ class _BookingFlowScreenState extends State<BookingFlowScreen>
               ),
               const SizedBox(height: 8),
               Text(
-                'Booking ID: #BK${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}',
+                'Booking ID: #${booking?.id.substring(0, 8).toUpperCase() ?? 'N/A'}',
                 style: context.bodySmall.copyWith(
                   fontWeight: FontWeight.w600,
                   color: context.primaryColor,
@@ -178,17 +209,18 @@ class _BookingFlowScreenState extends State<BookingFlowScreen>
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Close success dialog
-                // Navigate to payment screen if available
-                context.showInfoSnackBar(
-                  'Payment functionality will be implemented soon',
-                );
+                _navigateToPayment(booking?.id ?? '');
               },
               child: const Text('Proceed to Payment'),
             ),
           ],
         ),
       );
-    });
+    } catch (e) {
+      if (!mounted) return;
+      context.hideLoadingDialog();
+      context.showErrorSnackBar('Failed to create booking: ${e.toString()}');
+    }
   }
 
   Future<bool> _onWillPop() async {
@@ -197,6 +229,88 @@ class _BookingFlowScreenState extends State<BookingFlowScreen>
       return false;
     }
     return true;
+  }
+
+  int _parseHour(String timeString) {
+    // Handle formats like "2:30 PM", "10:00 AM", "12 PM", "1 AM"
+    final parts = timeString.split(' ');
+    if (parts.length < 2) return 0;
+
+    final timePart = parts[0];
+    final period = parts[1].toUpperCase();
+
+    int hour;
+    if (timePart.contains(':')) {
+      hour = int.tryParse(timePart.split(':')[0]) ?? 0;
+    } else {
+      hour = int.tryParse(timePart) ?? 0;
+    }
+
+    // Convert to 24-hour format
+    if (period == 'PM' && hour != 12) {
+      hour += 12;
+    } else if (period == 'AM' && hour == 12) {
+      hour = 0;
+    }
+
+    return hour;
+  }
+
+  int _parseMinute(String timeString) {
+    // Handle formats like "2:30 PM", "10:00 AM", "12 PM", "1 AM"
+    final parts = timeString.split(' ');
+    if (parts.isEmpty) return 0;
+
+    final timePart = parts[0];
+    if (timePart.contains(':')) {
+      final timeParts = timePart.split(':');
+      if (timeParts.length > 1) {
+        return int.tryParse(timeParts[1]) ?? 0;
+      }
+    }
+
+    return 0; // Default to 0 minutes if no minutes specified
+  }
+
+  void _navigateToPayment(String bookingId) {
+    final salonNotifier = ref.read(salonProvider.notifier);
+    final serviceNotifier = ref.read(serviceProvider.notifier);
+
+    final salon = selectedSalon ?? salonNotifier.getSalonById(selectedService?['salonId'] ?? widget.salonId ?? '');
+    final service = serviceNotifier.getServiceById(selectedService?['id'] ?? widget.serviceId ?? '');
+
+    final bookingData = {
+      'bookingId': bookingId,
+      'salon': {
+        'id': salon?.id ?? '',
+        'name': salon?.name ?? 'Unknown Salon',
+        'image': salon?.images.isNotEmpty == true ? salon!.images.first : '',
+      },
+      'service': {
+        'id': service?.id ?? '',
+        'name': service?.name ?? 'Unknown Service',
+        'price': service?.price ?? 0.0,
+        'duration': service?.duration ?? 0,
+      },
+      'booking': {
+        'date': selectedDate,
+        'time': selectedTime,
+        'type': bookingType,
+        'professional': selectedProfessional,
+        'address': bookingType == 'home' ? selectedAddress : null,
+        'salon': selectedSalon,
+      },
+      'amount': double.tryParse(selectedService?['price']?.toString().replaceAll('₹', '').replaceAll(',', '') ?? '0') ?? 0.0,
+    };
+
+    // Navigate to simple payment screen
+    Navigator.of(context).pushNamed(
+      AppRoutes.paymentCheckout,
+      arguments: bookingData,
+    ).then((_) {
+      // After payment, close this screen and go to booking history
+      AppRouter.pushNamedAndClearStack(AppRoutes.bookingHistory);
+    });
   }
 
   @override
@@ -276,32 +390,6 @@ class _BookingFlowScreenState extends State<BookingFlowScreen>
                   },
                 ),
                 SizedBox(height: context.responsiveSmallSpacing),
-
-                // Step Indicator
-                Row(
-                  children: List.generate(stepTitles.length, (index) {
-                    final isActive = index == currentStep;
-                    final isCompleted = index < currentStep;
-
-                    return Expanded(
-                      child: Container(
-                        height: 4,
-                        margin: EdgeInsets.only(
-                          right: index < stepTitles.length - 1
-                              ? 1.w(context)
-                              : 0,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isCompleted || isActive
-                              ? context.primaryColor
-                              : context.dividerColor,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    );
-                  }),
-                ),
-                SizedBox(height: context.responsiveSmallSpacing),
               ],
             ),
           ),
@@ -322,17 +410,17 @@ class _BookingFlowScreenState extends State<BookingFlowScreen>
                   },
                 ),
 
-                // Step 2: Professional Selection
-                ProfessionalSelectionWidget(
-                  selectedProfessional: selectedProfessional,
-                  onProfessionalSelected: (professional) {
-                    setState(() {
-                      selectedProfessional = professional;
-                    });
-                  },
-                ),
+                // Step 2: Professional Selection (COMMENTED OUT)
+                // ProfessionalSelectionWidget(
+                //   selectedProfessional: selectedProfessional,
+                //   onProfessionalSelected: (professional) {
+                //     setState(() {
+                //       selectedProfessional = professional;
+                //     });
+                //   },
+                // ),
 
-                // Step 3: Date & Time Selection
+                // Step 2: Date & Time Selection (was Step 3)
                 DateTimeSelectionWidget(
                   selectedDate: selectedDate,
                   selectedTime: selectedTime,
@@ -344,19 +432,21 @@ class _BookingFlowScreenState extends State<BookingFlowScreen>
                   },
                 ),
 
-                // Step 4: Booking Type Selection
+                // Step 3: Booking Type Selection (was Step 4)
                 BookingTypeWidget(
                   selectedType: bookingType,
                   selectedAddress: selectedAddress,
-                  onBookingTypeSelected: (type, address) {
+                  selectedSalon: selectedSalon,
+                  onBookingTypeSelected: (type, address, salon) {
                     setState(() {
                       bookingType = type;
                       selectedAddress = address;
+                      selectedSalon = salon;
                     });
                   },
                 ),
 
-                // Step 5: Booking Summary
+                // Step 4: Booking Summary (was Step 5)
                 BookingSummaryWidget(
                   selectedService: selectedService,
                   selectedProfessional: selectedProfessional,
@@ -364,6 +454,7 @@ class _BookingFlowScreenState extends State<BookingFlowScreen>
                   selectedTime: selectedTime,
                   bookingType: bookingType,
                   address: selectedAddress,
+                  selectedSalon: selectedSalon,
                   onConfirmBooking: _confirmBooking,
                 ),
               ],

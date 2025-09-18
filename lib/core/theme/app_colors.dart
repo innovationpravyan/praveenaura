@@ -3,126 +3,126 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  // Warm Professional Palette - Beauty Services Color System
+  // Luxurious Purple Palette - Premium Beauty Services
 
-  // Brand Colors - Light Theme
-  static const Color primaryPinkLight = Color(0xFF8B5A3C); // Warm professional brown for female
-  static const Color primaryPinkDark = Color(0xFFD4A574); // Golden for female dark mode
-  static const Color primaryPinkVariantLight = Color(0xFF6B4228);
-  static const Color primaryPinkVariantDark = Color(0xFF8B5A3C);
+  // Brand Colors - Rich Purple Spectrum
+  static const Color primaryPinkLight = Color(0xFF6B46C1); // Rich purple primary
+  static const Color primaryPinkDark = Color(0xFF6B46C1); // Same for consistency
+  static const Color primaryPinkVariantLight = Color(0xFF8B5CF6); // Lighter purple variant
+  static const Color primaryPinkVariantDark = Color(0xFF8B5CF6);
 
-  static const Color primaryBlueLight = Color(0xFF2196F3); // Keep original blue for male
-  static const Color primaryBlueDark = Color(0xFF64B5F6); // Lighter blue for male dark mode
-  static const Color primaryBlueVariantLight = Color(0xFF1976D2);
-  static const Color primaryBlueVariantDark = Color(0xFF2196F3);
+  static const Color primaryBlueLight = Color(0xFF6B46C1); // Rich purple for all themes
+  static const Color primaryBlueDark = Color(0xFF6B46C1); // Same for consistency
+  static const Color primaryBlueVariantLight = Color(0xFF8B5CF6);
+  static const Color primaryBlueVariantDark = Color(0xFF8B5CF6);
 
-  // Secondary Colors
-  static const Color secondaryLight = Color(0xFFF4E6D9); // Soft cream
-  static const Color secondaryDark = Color(0xFF2C2C2C); // Dark surface
-  static const Color secondaryVariantLight = Color(0xFFE8D5C4);
-  static const Color secondaryVariantDark = Color(0xFF3A3A3A);
+  // Secondary Colors - Purple Harmony
+  static const Color secondaryLight = Color(0xFFF3F0FF); // Very light purple background
+  static const Color secondaryDark = Color(0xFFF3F0FF); // Same for light theme
+  static const Color secondaryVariantLight = Color(0xFFE9E4FF); // Light purple surface
+  static const Color secondaryVariantDark = Color(0xFFE9E4FF);
 
-  // Accent Colors
-  static const Color accentLight = Color(0xFFD4A574); // Golden highlight
-  static const Color accentDark = Color(0xFFD4A574);
+  // Accent Colors - Purple Complements
+  static const Color accentLight = Color(0xFFA855F7); // Medium purple accent
+  static const Color accentDark = Color(0xFFA855F7);
 
   // Neutral Colors
   static const Color white = Color(0xFFFFFFFF);
   static const Color black = Color(0xFF000000);
 
-  // Background Colors
-  static const Color backgroundLight = Color(0xFFF8F8F8); // Eye strain reducing background
-  static const Color backgroundDark = Color(0xFF1A1A1A);
+  // Background Colors - Purple Elegance
+  static const Color backgroundLight = Color(0xFFFCFBFF); // Ultra light purple background
+  static const Color backgroundDark = Color(0xFFFCFBFF); // Same for light theme
   static const Color surfaceLight = Color(0xFFFFFFFF); // Pure white for cards
-  static const Color surfaceDark = Color(0xFF2C2C2C);
+  static const Color surfaceDark = Color(0xFFFFFFFF); // Same for light theme
 
   // Text Colors with proper opacity for mobile readability
-  static const Color textHighEmphasisLight = Color(0xFF2C2C2C); // Primary text
-  static const Color textMediumEmphasisLight = Color(0xFF6B6B6B); // Secondary text
-  static const Color textDisabledLight = Color(0x61000000); // 38% opacity
+  static const Color textHighEmphasisLight = Color(0xFF212121); // Dark text for light theme
+  static const Color textMediumEmphasisLight = Color(0xFF757575); // Medium gray text
+  static const Color textDisabledLight = Color(0xFFBDBDBD); // Light gray for disabled
 
-  static const Color textHighEmphasisDark = Color(0xFFE0E0E0);
-  static const Color textMediumEmphasisDark = Color(0xFFB0B0B0);
-  static const Color textDisabledDark = Color(0x61FFFFFF); // 38% opacity
+  static const Color textHighEmphasisDark = Color(0xFF212121); // Same for light theme
+  static const Color textMediumEmphasisDark = Color(0xFF757575); // Same for light theme
+  static const Color textDisabledDark = Color(0xFFBDBDBD); // Same for light theme
 
-  // Female Theme Colors
-  static const Color femaleBackgroundLight = Color(0xFFF8F8F8);
-  static const Color femaleBackgroundDark = Color(0xFF1A1A1A);
+  // Female Theme Colors - Feminine Purple Elegance
+  static const Color femaleBackgroundLight = Color(0xFFFCFBFF);
+  static const Color femaleBackgroundDark = Color(0xFFFCFBFF);
   static const Color femaleCardLight = Color(0xFFFFFFFF);
-  static const Color femaleCardDark = Color(0xFF2C2C2C);
-  static const Color femaleSecondary = Color(0xFFF4E6D9);
+  static const Color femaleCardDark = Color(0xFFFFFFFF);
+  static const Color femaleSecondary = Color(0xFFF3F0FF);
 
-  // Male Theme Colors
-  static const Color maleBackgroundLight = Color(0xFFF8F8F8);
-  static const Color maleBackgroundDark = Color(0xFF1A1A1A);
+  // Male Theme Colors - Sophisticated Purple
+  static const Color maleBackgroundLight = Color(0xFFFCFBFF);
+  static const Color maleBackgroundDark = Color(0xFFFCFBFF);
   static const Color maleCardLight = Color(0xFFFFFFFF);
-  static const Color maleCardDark = Color(0xFF2C2C2C);
-  static const Color maleSecondary = Color(0xFF03A9F4);
+  static const Color maleCardDark = Color(0xFFFFFFFF);
+  static const Color maleSecondary = Color(0xFFF3F0FF);
 
-  // Status Colors
-  static const Color successLight = Color(0xFF4A7C59); // Booking confirmations
-  static const Color successDark = Color(0xFF81C784);
-  static const Color warningLight = Color(0xFFD4A574); // Time-sensitive alerts
-  static const Color warningDark = Color(0xFFD4A574);
-  static const Color errorLight = Color(0xFFB85450); // Muted red for validation
-  static const Color errorDark = Color(0xFFE57373);
-  static const Color infoLight = Color(0xFF2196F3);
-  static const Color infoDark = Color(0xFF64B5F6);
+  // Status Colors - Purple Harmony
+  static const Color successLight = Color(0xFF10B981); // Emerald green for success
+  static const Color successDark = Color(0xFF10B981);
+  static const Color warningLight = Color(0xFFF59E0B); // Amber for warnings
+  static const Color warningDark = Color(0xFFF59E0B);
+  static const Color errorLight = Color(0xFFEF4444); // Red for errors
+  static const Color errorDark = Color(0xFFEF4444);
+  static const Color infoLight = Color(0xFF8B5CF6); // Light purple for info
+  static const Color infoDark = Color(0xFF8B5CF6);
 
   // Shadow Colors - subtle elevation for spatial minimalism
-  static const Color shadowLight = Color(0x33000000); // 20% opacity black
-  static const Color shadowDark = Color(0x33FFFFFF); // 20% opacity white
+  static const Color shadowLight = Color(0x1A000000); // 10% opacity black for light theme
+  static const Color shadowDark = Color(0x1A000000); // Same for consistency
 
   // Divider Colors
-  static const Color dividerLight = Color(0x1A000000); // 10% opacity
-  static const Color dividerDark = Color(0x1AFFFFFF); // 10% opacity
+  static const Color dividerLight = Color(0xFFE0E0E0); // Light gray dividers
+  static const Color dividerDark = Color(0xFFE0E0E0); // Same for light theme
 
   // Dialog Colors
   static const Color dialogLight = Color(0xFFFFFFFF);
-  static const Color dialogDark = Color(0xFF2C2C2C);
+  static const Color dialogDark = Color(0xFFFFFFFF);
 
   // Special Colors
   static const Color starColor = Color(0xFFFFC107);
 
-  // Gradients
+  // Gradients - Rich Purple Spectrum
   static const List<Color> pinkGradientLight = [
-    Color(0xFF8B5A3C),
-    Color(0xFFD4A574),
+    Color(0xFF6B46C1),
+    Color(0xFFA855F7),
   ];
 
   static const List<Color> pinkGradientDark = [
-    Color(0xFFD4A574),
-    Color(0xFF8B5A3C),
+    Color(0xFF6B46C1),
+    Color(0xFFA855F7),
   ];
 
   static const List<Color> blueGradientLight = [
-    Color(0xFF2196F3),
-    Color(0xFF64B5F6),
+    Color(0xFF6B46C1),
+    Color(0xFF8B5CF6),
   ];
 
   static const List<Color> blueGradientDark = [
-    Color(0xFF64B5F6),
-    Color(0xFF2196F3),
+    Color(0xFF6B46C1),
+    Color(0xFF8B5CF6),
   ];
 
-  // Category Colors
+  // Category Colors - Purple Spectrum
   static const Map<String, Color> categoryColors = {
-    'Hair Care': Color(0xFF8B5A3C),
-    'Skin Care': Color(0xFF4A7C59),
-    'Nail Art': Color(0xFFD4A574),
-    'Makeup': Color(0xFF9C27B0),
-    'Massage': Color(0xFF2196F3),
-    'Bridal': Color(0xFFB85450),
-    'Men\'s Grooming': Color(0xFF607D8B),
+    'Hair Care': Color(0xFF6B46C1),
+    'Skin Care': Color(0xFF10B981),
+    'Nail Art': Color(0xFFA855F7),
+    'Makeup': Color(0xFFD946EF),
+    'Massage': Color(0xFF8B5CF6),
+    'Bridal': Color(0xFFEC4899),
+    'Men\'s Grooming': Color(0xFF7C3AED),
   };
 
-  // Booking Status Colors
+  // Booking Status Colors - Purple Theme Harmony
   static const Map<String, Color> bookingStatusColors = {
-    'pending': Color(0xFFD4A574),
-    'confirmed': Color(0xFF2196F3),
-    'in_progress': Color(0xFF9C27B0),
-    'completed': Color(0xFF4A7C59),
-    'cancelled': Color(0xFFB85450),
+    'pending': Color(0xFFF59E0B),
+    'confirmed': Color(0xFF6B46C1),
+    'in_progress': Color(0xFFA855F7),
+    'completed': Color(0xFF10B981),
+    'cancelled': Color(0xFFEF4444),
   };
 
   // Helper methods

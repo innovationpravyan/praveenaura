@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../config/app_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/date_utils.dart';
 import '../../models/booking_model.dart';
@@ -815,6 +816,7 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
                 child: ElevatedButton(
                   onPressed: () {
                     // Navigate to booking history
+                    Navigator.of(context).pushReplacementNamed(AppRoutes.bookingHistory);
                   },
                   child: const Text('View Booking'),
                 ),

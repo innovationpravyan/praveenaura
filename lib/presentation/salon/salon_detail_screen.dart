@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../config/app_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/salon_model.dart';
 import '../../providers/salon_provider.dart';
@@ -389,6 +390,7 @@ class _SalonDetailScreenState extends ConsumerState<SalonDetailScreen>
                 ElevatedButton(
                   onPressed: () {
                     // Navigate to booking flow
+                    _navigateToBookingFlow();
                   },
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -616,6 +618,7 @@ class _SalonDetailScreenState extends ConsumerState<SalonDetailScreen>
             child: ElevatedButton.icon(
               onPressed: () {
                 // Navigate to booking flow
+                _navigateToBookingFlow();
               },
               icon: const Icon(Icons.calendar_today),
               label: const Text('Book Appointment'),
@@ -626,6 +629,17 @@ class _SalonDetailScreenState extends ConsumerState<SalonDetailScreen>
           ),
         ],
       ),
+    );
+  }
+
+  void _navigateToBookingFlow() {
+    final Map<String, dynamic> arguments = {
+      'salonId': widget.salonId,
+    };
+
+    Navigator.of(context).pushNamed(
+      AppRoutes.bookingFlow,
+      arguments: arguments,
     );
   }
 
